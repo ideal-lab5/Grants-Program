@@ -69,7 +69,7 @@ The [Iris-Session](./pallet_iris_session.md) pallet provides session-based stora
 
 We introduce a permissionless function to allow nodes to request that data be ingested into Iris. We provide an extrinsic, `create`, which accepts a MultiAddr and CID and encodes it as a command in runtime storage. The offchain workers of Iris validators process the command and publish the results onchain. After the transaction is validated, the new CID, along with ownership, is encoded into runtime storage by creating a new asset class owned by the original caller of the extrinsic.
 
-![Data-Ingestion](https://github.com/iridium-labs/Grants-Program/blob/iris/src/data_ingestion.png)
+![ingestion](https://github.com/iridium-labs/Grants-Program/blob/iris/src/data_ingestion.png)
 
 #### Storing (Pinning) Data
 
@@ -91,7 +91,7 @@ To eject (a copy of) data from the network, authorized nodes in parachains invok
 
 The caller can then invoke the [custom rpc endpoint](#custom-rpc-endpoints), passing the CID of the data they wish to retrieve as an argument, and get the bytes for that CID in response.
 
-![Data-Ejection](https://github.com/iridum-labs/Grants-Program/blob/iris/src/data_ejection.png)
+![ejection](https://github.com/iridum-labs/Grants-Program/blob/iris/src/data_ejection.png)
 
 
 #### Governance, Moderation and Cleanup
