@@ -91,7 +91,7 @@ To eject (a copy of) data from the network, authorized nodes in parachains invok
 
 The caller can then invoke the [custom rpc endpoint](#custom-rpc-endpoints), passing the CID of the data they wish to retrieve as an argument, and get the bytes for that CID in response.
 
-![Data Ejection](https://github.com/mystery-team/Grants-Program/blob/master/src/big_picture.png)
+![Data Ejection](https://github.com/iridum-labs/Grants-Program/blob/iris/src/data_ejection.png)
 
 
 #### Governance, Moderation and Cleanup
