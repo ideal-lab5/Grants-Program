@@ -356,4 +356,3 @@ Here you can also add any additional information that you think is relevant to t
 - I've attempted building a decentralized storage application with IPFS and Ethereum in the past. That application was also called Iris, which you can find here https://github.com/driemworks/iris.
   - An early design of that project was discussed here: https://discuss.ipfs.io/t/dropbox-like-application-on-ipfs/7379
   - The approach taken in the initial design was insufficient to achieve what this proposal can.
-
