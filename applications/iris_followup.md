@@ -32,8 +32,15 @@ For further details, we direct the reader to view our whitepaper here: [https://
 
 #### Tech Stack
 
+Frameworks + Libraries:
+
 - IPFS (specifically rust-ipfs)
 - Substrate
+
+Languages:
+
+- Rust
+- Go
 - Javascript/Typescript
 
 #### Terminology
@@ -56,7 +63,7 @@ Under the hood, the 'data space' is an asset class which is mapped to a set of c
 
 Further, data spaces form the basis for moderation, or curation, within the network. Each data space may have a set of rules associated with it which limits not only the type of data that can be associated with the space, but also with the contents of the data. We intend to accomplish this through the execution of machine learning models, bayesian filters, and more, within a trusted execution environment. However, that work is outside the scope of this proposal.
 
-![data spaces diagram](https://github.com/ideal-lab5/iris-docs/blob/master/resources/data_spaces.drawio.png)
+![data spaces diagram](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/data_spaces.drawio.png)
 
 #### Composable Access Rules
 
@@ -69,23 +76,23 @@ A composable access rule must implement the following functions:
 
 With these two functions implemented and the contract deployed to the chain, data owners can then specify, using the contract address, which rules they want to be applied to their data. When a consumer node fetches data from the network, each of the specified rules must be executed by invoking the execute function in each registered contract. The result of contract failure results in the denial of data access. We use the `bare_call` function from the contracts pallet to invoke contract functions and wait for execution to complete.
 
-#### Proxy/Gateway Nodes
+#### Proxy/Gateway Nodes and offchain clients for data ingestion/ejection
 
-Proxy. or gateway. nodes form the basis of secure data ingestion and ejection from the network. Ultimately, these nodes will be responsible for powering Iris' proxy re-encryption mechanism. This mechanism is out of the scope of the current proposal, however, we will create this node role as to provide the foundation for subsequent work in which the proxy re-encryption scheme will be implemented. In the implementation proposed here, these nodes simply act as ingress and egress points to/from the IPFS network. Additionally, we will implement zk proofs once the offchain worker adds data to IPFS and publishes the cid onchain, which results in the creation of a data asset.
+Proxy. or gateway. nodes form the basis of secure data ingestion and ejection from the network. Ultimately, these nodes will be responsible for powering Iris' proxy re-encryption mechanism. This mechanism is out of the scope of the current proposal, however, we will create this node role as to provide the foundation for subsequent work in which the proxy re-encryption scheme will be implemented. In the implementation proposed here, these nodes simply act as ingress and egress points to/from the IPFS network. Additionally, we will implement zk proofs once the offchain worker adds data to IPFS and publishes the cid onchain, which results in the creation of a data asset. Though proxy nodes do not increase the security of the network at this point, they do at least cut the dependency on data consumers and data owner to run a full Iris node to enable data ingestion and ejection.
 
 Putting data spaces and proxy nodes together, we arrive at the following design:
 
-![proxy nodes](https://github.com/ideal-lab5/iris-docs/blob/master/resources/proxy.drawio.png)
+![proxy nodes](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/proxy_data_spaces_io.drawio.png)
 
-Additionally, this impacts the data ingestion and ejection workflows. We modify data ingestion to first encrypt data before it is ingested into Iris and to decrypt data when it is retrieved from Iris.
+Additionally, this impacts the data ingestion and ejection workflows. We will build a secure offchain client using Go in order to serve files for ingestion by proxy nodes and to listen for data sent by proxy nodes when requested from the network.
 
-![data ingestion](https://github.com/ideal-lab5/iris-docs/blob/master/resources/data_ingestion.png)
+![data ingestion](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/data_injection.drawio.png)
 
-![data ejection](https://github.com/ideal-lab5/iris-docs/blob/master/resources/data_ejection.drawio.png)
+![data ejection](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/data_ejection.drawio.png)
 
 #### Proxy Node Reward Structure
 
-Each data ingestion and ejection transaction has an additional transaction fee which is then pooled together and distributed to proxy nodes at the end of a session based on their online 
+Each data ingestion and ejection transaction has an additional transaction fee which is then pooled together and distributed to proxy nodes at the end of a session based on their online presence.
 
 #### Availability-Encouraging Replication Mechanism
 
@@ -102,9 +109,15 @@ In our mechanism, each storage nodes maintains four sets of other storage nodes 
 
 The replica set and metric set are both maintained by the [T-Man protocol](https://www.researchgate.net/publication/225403352_T-Man_Gossip-Based_Overlay_Topology_Management). Through two distinct phases, our mechanism allows a data owner to choose a minimum desired availability and a number of replicas, and the storage system autonomously seeks replicas which satisfy her needs. In the first phase, nodes update their replica and metric sets, which reflect the replica candidates that the node will request replication from in the next round. In the subsequent round, nodes who have been requested by data owners to store and replicate data use the metric and random sets to gossip with peers and request replication. Nodes who agree to replication are granted a share of rewards as provided by data owners. The taboo set maintains a list of candidates who have rejected replication proposals and the replica set a list of candidates who have accepted them.
 
+A node refreshes it's metric and random set based on the output of a relative score function, which provides a score between any two nodes. This can be thought of as a metric between any two nodes, where two 'identical' nodes have a relative score of 0. The score function within Iris is based on expected availability and promised storage space. That is, if two nodes have the same expected availability and the same storage space, the score between them is 0. That is, there is no difference in the value that they deliver to the network. We will refine the score function as part of this proposal and present a formal specification and implementation. This score function is used by each storage node to search for candidate nodes within the network, and more specifically by the T-MAN protocol to maintain and updaate the metric and random sets.
+
 #### IRIS SDK
 
-We intend to adapt the user interface developed as part of the initial Iris grant proposal for usage as an SDK for dapp developers on Iris. The SDK will facilitate development of user interfaces for contracts running on the Iris blockchain. As an exmaple, the Iris Asset Exchange UI from the initial grant proposal is one such application. Additionally, we intend to develop a user interface to allow users to easily find and use smart contracts deployed on Iris through a 'hub-like' portal.
+We intend to adapt the user interface developed as part of the initial Iris grant proposal for usage as an SDK for dapp developers on Iris. The SDK will facilitate development of user interfaces for contracts running on the Iris blockchain. As an exmaple, the Iris Asset Exchange UI from the initial grant proposal is one such application. We will adapt the current Iris UI to use this new SDK as well as demonstrate how to develop a simple data access marketplace.
+
+Specifically, we intend to adapt the SDK from the functions available in these files: [https://github.com/ideal-lab5/ui/tree/master/src/services](https://github.com/ideal-lab5/ui/tree/master/src/services)
+
+https://github.com/ideal-lab5/ui
 
 #### Prior Work
 
@@ -246,6 +259,10 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0b. | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
 | 0c. | Testing Guide | Core functions will be fully covered by unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. We will provide a demo video and a manual testing guide, including environment setup instructions. |
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
+| 1. | Substrate Module: Iris-Proxy: Proxy Node creation | Implement mechanism to allow nodes to act as a proxy, including verification of network connection speed. |
+| 2. | Substrate Pallet: Iris-Proxy: Proxy Routing Service | Implement a routing layer to assign incoming data ingestion requests to proxy nodes |
+| 3. | Offchain Module: Data Ingestion + Reception Server | Build an offchain client using Go that allows data owners to make data available to proxy nodes and data consumers to receive data streams from proxy nodes |
+| 4. | Substrate Module: Iris-Proxy | Implement offchain service to fetch data from a data-owners offchain server and stream bytes to data-consumers |
 
 ### Milestone 3 - Storage System
 
@@ -259,6 +276,7 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0b. | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
 | 0c. | Testing Guide | Core functions will be fully covered by unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. We will provide a demo video and a manual testing guide, including environment setup instructions. |
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
+
 
 ### Milestone 4 - Javascript SDK and other apps
 
