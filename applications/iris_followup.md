@@ -3,21 +3,22 @@
 - **Project Name:** Iris
 - **Team Name:** Ideal Labs
 - **Payment Address:** Ethereum: 0x6ec0D6c005797a561f6F3b46Ca4Cf43df3bF7888 (DAI)
-- **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 2
+- **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 3
 
 ## Project Overview :page_facing_up:
 
-Followup to: https://github.com/w3f/Grants-Program/pull/812
+This is a follow-up grant to Iris:
+
+- https://github.com/w3f/Grants-Program/pull/812
+- https://github.com/w3f/Grants-Program/blob/master/applications/iris.md
 
 ### Overview
 
 Iris is a decentralized network that provides a secure data storage, delivery, and ownership layer for Web 3.0 applications. It is infrastructure for the decentralized web, providing a storage and data exchange which enables the transfer and monetization of access to and ownership of data across chains, smart contracts and participants in the network or connected through a relay chain. Iris provides security, availability, reputation, and governance on top of IPFS, enabling data ownership, access management, and the commodification of latent storage capacity and content delivery. It applies defi concepts to data, reputation, storage capacity and availability to synthesize computation and storage and to represent off-chain assets in an on-chain context. Ideal Labs wants to be the forefront of the next data revolution, and to help build the tools needed for a transparent and fair data economy.
 
-Ideal Labs wants to be at the forefront of the next data revolution.
-
 ### Project Details
 
-The intention of this followup grant is to implement several features that enable Iris to be a secure, social, and highly-available storage network without compromising the highest degrees of decentralization. In our system, data owners associate their data with any number of 'data spaces' which each have specific rule sets and inclusion policies. To enhance security, we use a novel proxy re-ecryption mechanism that does not expose any secret keys as well as introduce the concept of the proxy node which enables ciphertext to be re-encrypted. Additionally we introduce "composable access rules", which allow data owners to specify rules which are implicitly enforced when consumers access their data. Lastly, we will build a javascript SDK to allow user interfaces for dapps built on Iris to easily build applications and interface with Iris.
+The intention of this follow-up grant is to implement several features that enable Iris to be a secure, social, and highly-available storage network without compromising decentralization. In our system, data owners associate their data with any number of 'data spaces' which each have specific rule sets and inclusion policies. We also lay the foundations for our encryption scheme (we intend use a novel proxy re-ecryption mechanism, though the implementation of this mechanism is out of the scope of this proposal) by introducing the concept of the proxy node which will act as the linchpin for re-encryption in the future, as well as allows data owners and data consumers to run light clients (as they no longer are required to run the full node and add data to the embedded IPFS node). We also introduce a game-theoretic framework for ensuring replication and availability of data within the storage layer of Iris. Additionally we introduce "composable access rules", which allow data owners to specify rules which are implicitly enforced when consumers access their data. Lastly, we will build a javascript SDK to allow user interfaces for dapps built on Iris to easily build applications and interface with Iris.
 
 This proposal makes several improvements on top of the existing Iris blockchain, specifically in terms of security, extensibility, data organiziation, and data ingestion/ejection.
 
@@ -26,15 +27,16 @@ To summarize, in the following we propose:
 - the introduction of "data spaces"
 - the implementation of "composable access rules" to apply custom business logic to data
 - the introduction of "proxy nodes" that enable proxy re-encryption within the network
+- the implementation of an availability-encouraging storage system
 - a javascript SDK to allow dapp developers to easily build front ends for smart contracts on Iris
 
-For further details, we direct the reader to view our whitepaper here: [https://www.idealabs.network/docs](https://www.idealabs.network/docs)
+For further details, we direct the reader to view our whitepaper draft here: [https://www.idealabs.network/docs](https://www.idealabs.network/docs)
 
 #### Tech Stack
 
-Frameworks + Libraries:
+Frameworks/Libraries:
 
-- IPFS (specifically rust-ipfs)
+- IPFS (specifically [rust-ipfs](https://github.com/rs-ipfs/rust-ipfs))
 - Substrate
 
 Languages:
@@ -76,17 +78,23 @@ A composable access rule must implement the following functions:
 
 With these two functions implemented and the contract deployed to the chain, data owners can then specify, using the contract address, which rules they want to be applied to their data. When a consumer node fetches data from the network, each of the specified rules must be executed by invoking the execute function in each registered contract. The result of contract failure results in the denial of data access. We use the `bare_call` function from the contracts pallet to invoke contract functions and wait for execution to complete.
 
-#### Proxy/Gateway Nodes and offchain clients for data ingestion/ejection
+#### Proxy Nodes and offchain clients for data ingestion/ejection
 
-Proxy. or gateway. nodes form the basis of secure data ingestion and ejection from the network. Ultimately, these nodes will be responsible for powering Iris' proxy re-encryption mechanism. This mechanism is out of the scope of the current proposal, however, we will create this node role as to provide the foundation for subsequent work in which the proxy re-encryption scheme will be implemented. In the implementation proposed here, these nodes simply act as ingress and egress points to/from the IPFS network. Additionally, we will implement zk proofs once the offchain worker adds data to IPFS and publishes the cid onchain, which results in the creation of a data asset. Though proxy nodes do not increase the security of the network at this point, they do at least cut the dependency on data consumers and data owner to run a full Iris node to enable data ingestion and ejection.
+Proxy nodes form the basis of secure data ingestion and ejection from the network. Ultimately, these nodes will be responsible for powering Iris's proxy re-encryption mechanism. This mechanism is out of the scope of the current proposal, however, we will create this node role as to provide the foundation for subsequent work in which the proxy re-encryption scheme will be implemented. In the implementation proposed here, these nodes simply act as ingress and egress points to/from the IPFS network. Additionally, we will implement zk proofs that are submitted on-chain once the offchain worker adds data to IPFS and publishes the cid onchain (which results in the creation of a data asset). Though proxy nodes do not increase the security of the network at this point, they do at least cut the dependency on data consumers and data owner to run a full Iris node to enable data ingestion and ejection.
 
 Putting data spaces and proxy nodes together, we arrive at the following design:
 
 ![proxy nodes](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/proxy_data_spaces_io.drawio.png)
 
-Additionally, this impacts the data ingestion and ejection workflows. We will build a secure offchain client using Go in order to serve files for ingestion by proxy nodes and to listen for data sent by proxy nodes when requested from the network.
+##### Offchain Client
+
+The inclusion of proxy nodes impacts data ingestion and ejection workflows. We will build a secure offchain client using Go in order to serve files for ingestion by proxy nodes and to listen for data sent by proxy nodes when requested from the network.
+
+In the initial design of Iris, data ingestion functioned by allowing a data owner, who is running a full iris node, to add some data to their embedded IPFS node and gossiping with a validator node, who would then add the data to their own embedded node, which is connected with other validator nodes. This poses several issues. Not only is it insecure, but also it forces data owners to always run a full node which limits the ease of use of the system. Similarly, data ejection functioned by allowing a data consumer to directly connect their embedded IPFS node to a validator node to retrieve data from the 'validator network', which introduced a similar set of issues that data owner would face. Proxy nodes allow us to sidestep both of these issues by acting as a gateway into the IPFS network. To accomplish data ingestion, nodes will run an offchain client, which acts as a file server that only authorized proxy nodes can call into..
 
 ![data ingestion](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/data_injection.drawio.png)
+
+For data ejection, data consumers run the offchain client which will listen for connections from proxy nodes, accept authorized connections, and provide data consumers the ability to fetch data without running a full node.
 
 ![data ejection](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/data_ejection.drawio.png)
 
@@ -98,26 +106,61 @@ Each data ingestion and ejection transaction has an additional transaction fee w
 
 For a mathematical treatment of this mechanism, we defer to section 4 of the Iris whitepaper.
 
-To maximize the decentralized nature of the storage layer of the network, we propose a game theoretic availability-encouraging mechanism based on the "stochastic replication game" as proposed [here](https://www.researchgate.net/publication/282894916_Game-Theoretic_Mechanisms_to_Increase_Data_Availability_in_Decentralized_Storage_Systems). The intention behind our mechanism is to build a system where highly-available, high capacity storage nodes are incentivized to provide assistance to lower-capacity nodes with less availability without sacrificing total storage availability. That is, we want to build a storage system that won't eventually become dominated by large data warehouses.
+To maximize the decentralized nature of the storage layer of the network, we propose a game theoretic availability-encouraging mechanism based on the "stochastic replication game" as proposed [here](https://www.researchgate.net/publication/282894916_Game-Theoretic_Mechanisms_to_Increase_Data_Availability_in_Decentralized_Storage_Systems). The intention behind our mechanism is to build a system where highly-available, high capacity storage nodes are incentivized to provide assistance to lower-capacity nodes with less availability without sacrificing availability of the data itself. That is, we intend to build a storage system that won't eventually become dominated by large data warehouses but rather where 'small' and 'large' storage nodes mutually benefit from each others participation.
 
-In our mechanism, each storage nodes maintains four sets of other storage nodes int he network,
+In our mechanism, each storage nodes maintains four sets of other storage nodes in the network,
 
 - The **replica set** (for a data asset D): The set of storage nodes (excluding self) which have previously agreed to replicate some data asset D within the current session.
 - The **taboo set**: A set of storage nodes who have rejected replication proposals.
-- The **metric set**: A set of nodes that have been scored (by a scoring function) and meet some minimum score. It has size sm < 0. This set is maintained and updated by the T-MAN protocol.
+- The **metric set**: A set of nodes that have been scored (by a scoring function) and meet some minimum score. It has size sm < 0. This set is maintained and updated by the T-MAN protocol and represent a set of potential replication partners.
 - The **random set**: A set of randomly chosen storage nodes, with maximum size s r > 0. This set is maintained and updated by the T-MAN protocol.
 
 The replica set and metric set are both maintained by the [T-Man protocol](https://www.researchgate.net/publication/225403352_T-Man_Gossip-Based_Overlay_Topology_Management). Through two distinct phases, our mechanism allows a data owner to choose a minimum desired availability and a number of replicas, and the storage system autonomously seeks replicas which satisfy her needs. In the first phase, nodes update their replica and metric sets, which reflect the replica candidates that the node will request replication from in the next round. In the subsequent round, nodes who have been requested by data owners to store and replicate data use the metric and random sets to gossip with peers and request replication. Nodes who agree to replication are granted a share of rewards as provided by data owners. The taboo set maintains a list of candidates who have rejected replication proposals and the replica set a list of candidates who have accepted them.
 
+##### Score Function
+
 A node refreshes it's metric and random set based on the output of a relative score function, which provides a score between any two nodes. This can be thought of as a metric between any two nodes, where two 'identical' nodes have a relative score of 0. The score function within Iris is based on expected availability and promised storage space. That is, if two nodes have the same expected availability and the same storage space, the score between them is 0. That is, there is no difference in the value that they deliver to the network. We will refine the score function as part of this proposal and present a formal specification and implementation. This score function is used by each storage node to search for candidate nodes within the network, and more specifically by the T-MAN protocol to maintain and updaate the metric and random sets.
+
+##### Storage Node rewards
+
+Reward distribution for data storage occurs in several phases which we detail below. Assume that the data owner has requested storage for some data asset D over some period of sessions, which we refer to as an era. Below, we detail the flow of currency between participants when storing D:
+
+Phase 0: Pre-Session Activities
+
+- The data owner locks a minimum amount of currency required for a node to reasonably
+believe that they will receive payment over the agreed upon era length.
+
+Phase 1: Session Start
+
+- Verify session storage participants
+
+Phase 2: Session End
+
+- Verify session participants that are still online and still have the data stored
+
+Phase 3: Post-Session
+
+- Distribute 33.33% of the total reward amongst the session participants
+- Lock 66.67% of the rest of the reward and store network participation in a mapping.
+- That is, we distribute one third of the rewards now, and the remaining ⅔ at the end of the
+specified number of sessions. These percentages may be subject to change as we aim to optimize this system.
+
+Phase 4: Post-Era
+
+- Distribute the remaining locked rewards based on total participation of all participants across
+all sessions.
+
+##### IRIS-OBOL conversion rate
+
+The formulation of this function is covered in depth in [section 6.2.1](https://gateway.pinata.cloud/ipfs/QmWuY8R7tBWMTbMvgWGgtzLHEC5JHR1Kz3hW1F2CxmGLUg#h.1xw8vwnayynx) of the iris whitepaper.
+
+The IRIS-OBOL conversion rate is a function of the ratio of storage available to storage reserved. In general, we want to maintain a reasonable level of reserved storage space that both minimized storage costs paid by data owners and maximizes rewards given to storage nodes, as determined by the storage price curve (see [section 4.2](https://gateway.pinata.cloud/ipfs/QmWuY8R7tBWMTbMvgWGgtzLHEC5JHR1Kz3hW1F2CxmGLUg#h.fuqhmdg1pqfr)), which will be a curve that grows exponentially as reserved storage space approaches the maximum storage space of the network. We design the conversion rate to favor conversion of IRIS to OBOL when we fall below the ideal storage ratio (this precise value is yet to be determined) and to favor unstaking of IRIS, which results in the burning of OBOL.
 
 #### IRIS SDK
 
 We intend to adapt the user interface developed as part of the initial Iris grant proposal for usage as an SDK for dapp developers on Iris. The SDK will facilitate development of user interfaces for contracts running on the Iris blockchain. As an exmaple, the Iris Asset Exchange UI from the initial grant proposal is one such application. We will adapt the current Iris UI to use this new SDK as well as demonstrate how to develop a simple data access marketplace.
 
-Specifically, we intend to adapt the SDK from the functions available in these files: [https://github.com/ideal-lab5/ui/tree/master/src/services](https://github.com/ideal-lab5/ui/tree/master/src/services)
-
-https://github.com/ideal-lab5/ui
+Specifically, we intend to adapt the SDK from the functions available in these files: [https://github.com/ideal-lab5/ui/tree/master/src/services](https://github.com/ideal-lab5/ui/tree/master/src/services).
 
 #### Prior Work
 
@@ -127,26 +170,41 @@ This proposal is a followup to a completed web3 foundation grant which laid the 
 - a naïve validator-based storage system  that encourages storage of 'valuable' data
 - support for contracts and a rudimentary decentralized exchange to purchase and sell data access rights
 
+In addition to these items, the Iris fork of substrate has been upgraded to by in sync with the latest substrate master branch and we have also upgraded the runtime to use the latest version of rust-ipfs.
+
 #### Limitations and Expectations
 
 Iris is *not* intended to act as a decentralized replacement for traditional cloud storage or to be a competitor to existing centralized data storage solutions. We are aware that Amazon could artifically deflate the price of S3 buckets down to $0 and still make billions a year, while this project would inevitably implode.
 
 ### Ecosystem Fit
 
-Help us locate your project in the Polkadot/Substrate/Kusama landscape and what problems it tries to solve by answering each of these questions:
-
 - Where and how does your project fit into the ecosystem?
-- Who is your target audience (parachain/dapp/wallet/UI developers, designers, your own user base, some dapp's userbase, yourself)?
-- What need(s) does your project meet?
-- Are there any other projects similar to yours in the Substrate / Polkadot / Kusama ecosystem?
-  CESS, Crust
-  - If so, how is your project different?
-    - embedded IPFS
-    - availability encouruaging storage system
-    - proxy re-encryption mechanism and reputation
-    - Iris believes that not all data is equal and though we do not intend to impose any type of authority in terms of moderation or censorship, we provide mechanisms for data owners to create curated data enclaves.
+  Iris intends to be infrastructure for dapps that leverage decentralized storage and ownership capabilities. Further, our long term intention is to participate in a parachain auction once Iris is feature complete, after which we will be able to provide cross-chain data ownership that is cryptographically tied to the offchain storage within the embedded IPFS network.
 
-  - If not, are there similar projects in related ecosystems?
+- Who is your target audience (parachain/dapp/wallet/UI developers, designers, your own user base, some dapp's userbase, yourself)?
+
+  - The target audience is very wide ranging as we aim to provide infrastructure for dapps and potentially other parachains to allow them to easily take advantage of decentralized storage capabilities. We also aim to provide tools for data owners and content creators to share or sell their data without a middleman, determining their own prices and business models. Additionally, data spaces allow organizations to control which data can be associated with them, which may allow Iris to be a solution in B2B or middleware solution in existing centralized applications.
+
+- What need(s) does your project meet?
+  - The basis of Iris is the creation of a cryptographically verifiable relationship between data ownership, accessibility, and availability.
+
+- Are there any other projects similar to yours in the Substrate / Polkadot / Kusama ecosystem?
+  - There are several proposed decentralized storage solutions within the dotsama ecosystem. Of note, there is Crust and CESS, both of which have previously been awarded web3 foundation grants.
+  - If so, how is your project different?
+    - Unlike other solutions, Iris uses an embedded IPFS network to accomplish offchain storage of data. This allows us to leverage many of the features of IPFS without reinventing the wheel.
+    - Iris uses a game theoretic approach to create an availability-encouraging storage system.
+    - Iris uses DeFi concepts not only to cryptographically associate data ownership with data availability, but also so build access rules and rights.
+    - proxy re-encryption mechanism and reputation
+    - Iris believes that not all data is equal and though we do not intend to impose any type of authority in terms of moderation or censorship, we provide mechanisms for data owners to create curated data enclaves. Although we believe that decentralization is the way forward, we see the inherent issues that arise out of an open systems where data is essentially un-removable.
+
+There are several existing decentralized storage networks that already exist, including:
+
+- filecoin: The eminent storage system built on top of IPFS.
+- storj
+- siacoin
+- theta: A storage system that emphasizes data streaming and has a robust data delivery network.
+
+Iris differs from these networks in many ways. These networks generally are open, do not maintain on-chain ownership, and do not have the cross-chain capabilities that Iris is capable of supporting.
 
 ## Team :busts_in_silhouette:
 
@@ -170,7 +228,7 @@ Brian Thamm: co-founder/COO
 
 ### Team's experience
 
-Iridium Labs is composed of a group of individuals coming from diverse backgrounds across tech, business, and marketing.
+Iridium Labs is composed of a group of individuals coming from diverse backgrounds across tech, business, and marketing, who all share a collective goal of realizing a decentralized storage layer that can facilitate the emergence of dapps that take advantage of decentralized storage.
 
 **Tony Riemer**
 Tony is a full-stack engineer with 6 years of experience building enterprise applications for fortune 500 companies, including both Fannie Mae and Capital One. Notably, he was the lead engineer of Capital One's "Bank Case Management" system, has lead several development teams to quickly and successfully bringing products to market while adhering to the strictest code quality and testing practices, and has acted as a mentor to other developers. Additionally, he holds a breadth of knowledge in many languages and programming paradigms and has built several open-source projects, including Mercury, a proof of work blockchain written in Go, an OpenCV-based augmented reality application for Android, as well as experiments in home automation and machine learning. More recently, he is the founder and lead engineer at Ideal Labs, where he single-handedly designed the Iris blockchain and implemented the prototype, which was funded via a web3 foundation grant. He is passionate about decentralized technology and strives to make the promises of decentralization a reality.
@@ -195,8 +253,6 @@ Brian Thamm has over a decade of experience leading large data initiatives in bo
 After several years working with companies ranging from the Fortune 500 to startups, Brian decided to focus on his passion for enabling individuals to use data to improve their decision-making by starting Sophinea. Since its founding in late 2018, Sophinea has lead multi-national Data Analytics Modernization efforts in support of the United State’s Department of State and the National Institutes of Health.
 
 Brian believes that data-driven success is something that often requires top level support, but is only achieved when users of the information are significantly engaged and are able to seamlessly translate data into decision-making. This requires expertise, but often also novel datasets. Brian believes that blockchain ecosystems represent a generational opportunity to develop these novel data sets by providing a fairer incentive structure to reward data providers for their efforts and willingness to share.
-
-This is a follow-up grant to Iris: https://github.com/w3f/Grants-Program/blob/master/applications/iris.md
 
 ### Team Code Repos
 
@@ -231,7 +287,7 @@ As stated earlier in the [prior work](#prior-work) section, we have delivered th
 ### Milestone 1 — Implement Data Spaces and Composable Access Rules
 
 - **Estimated duration:** 1 month
-- **FTE:**  2.5
+- **FTE:**  1
 - **Costs:** 10,000 USD
 
 This milestone delivers the creation of data spaces, the ability to manage data spaces associated with data, and lays the groundwork for future data-space moderation capabilities. It also delivers composable access rules to the Iris network, allowing data owners to specify unique business models that consumers must adhere to across any number of data spaces.
@@ -268,7 +324,7 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 
 - **Estimated Duration:** 2 months
 - **FTE:**  2.5
-- **Costs:** 30,000 USD
+- **Costs:** 40,000 USD
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
@@ -276,13 +332,18 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0b. | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
 | 0c. | Testing Guide | Core functions will be fully covered by unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. We will provide a demo video and a manual testing guide, including environment setup instructions. |
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
+| 1. | Substrate Module: Iris-Assets/Iris-Session | Implement zk proofs that are submitted by offchain workers after communicating with IPFS (in the Iris-Session pallet) and verify them in the Iris-Assets pallet |
+| 2. | Substrate Module | Implement a native token, IRIS, and a secondary token, OBOL, and a function that allows nodes to stake IRIS and be rewarded with OBOL based on the IRIS-OBOL conversion rate |
+| 3. | Substrate Module: Iris-Storage | Implement generation of dummy files of specific sizes, storage of these files by storage node candidates, and submission of a zk proof after submission. |
+| 4. | Substrate Module: Iris-Storage | Implement Storage Node routing module to match storage requests with nodes who meet minimal requirements as defined by data owners |
+| 5. | Substrate Module: Iris-Storage | Implement  the T-MAN protocol and the relative scoring function |
+| 6. | Substrate Module: Iris-Storage | Implement the stochastic replication game to ensure availability and replication of data |
 
-
-### Milestone 4 - Javascript SDK and other apps
+## Milestone 4 - Javascript SDK and other apps
 
 - **Estimated Duration:** 1 months
-- **FTE:**  2.5
-- **Costs:** 8,000 USD
+- **FTE:**  2
+- **Costs:** 10,000 USD
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
@@ -290,20 +351,19 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0b. | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
 | 0c. | Testing Guide | Core functions will be fully covered by unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. We will provide a demo video and a manual testing guide, including environment setup instructions. |
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
+| 1. | Javascript SDK | We will develop the javascript SDK to provide easy accessbility for front end developers to hook into dapps built on top of Iris as well as easily accomplish data ingestion, ejection, allocation/inclusion to data spaces, and more. We will document the full functionalities and specification of the SDK as part of this milestone. |
+| 2. | Demonstration of the SDK | We will develop an NFT-marketplace type application on top of Iris to demonstrate the usage of the SDK. This will be adapted from the Iris Asset Exchange from the previous grant proposal for Iris. Further, we will demonstrate how this can be adapted by app developers to categorize data into their own data spaces. |
 
 ## Future Plans
 
-- work with dapp developers to assist in develop of applications on Iris. We are already in communication with several projects that are interested in leveraging Iris as their storage system.
-- strive to become a parachain on Kusama and Polkadot
-- continue to expand the features available in Iris, such as partial ownership of assets
-- a
+- We intend to continue development after this proposal is completed. Specifically, we plan to consult with cryptography experts to determine the best approach for implementing a robust, performant, and secure **proxy re-ecnryption** scheme. Additionally, we intend to implement an **anonymous reputation system** for submitting feedback for data, data owners, and data spaces. We also plan to implement a robust **moderation and governance** protocol, which includes the execution of machine learning models and other security/verification checks (such as bayseian filters) within a **trust execution environment**.
+- We will work with dapp developers to assist in develop of applications on Iris. We are already in communication with several projects that are interested in leveraging Iris as their storage system.
+- We will strive to become a parachain on Kusama and Polkadot
+- We will continue to expand the features available in Iris, such as partial ownership of assets, selling ownership of asset classes, and more
 
 ## Additional Information :heavy_plus_sign:
 
-**How did you hear about the Grants Program?** Web3 Foundation Website
+**How did you hear about the Grants Program?**
+We first heard about the grants program from the Web3 Foundation Website.
 
-Here you can also add any additional information that you think is relevant to this application but isn't part of it already, such as:
-
-- Work you have already done.
-- If there are any other teams who have already contributed (financially) to the project.
-- Previous grants you may have applied for.
+Previous work on Iris is known the W3F grants team.
