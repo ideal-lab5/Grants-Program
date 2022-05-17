@@ -2,7 +2,7 @@
 
 - **Project Name:** Iris
 - **Team Name:** Ideal Labs
-- **Payment Address:** TODO (DAI)
+- **Payment Address:** 0xB7E92CCDE85B8Cee89a8bEA2Fd5e5EE417d985Ad (DAI)
 - **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 3
 
 ## Project Overview :page_facing_up:
@@ -230,23 +230,25 @@ Brian Thamm: co-founder
 Iridium Labs is composed of a group of individuals coming from diverse backgrounds across tech, business, and marketing, who all share a collective goal of realizing a decentralized storage layer that can facilitate the emergence of dapps that take advantage of decentralized storage.
 
 **Tony Riemer**
-Tony is a full-stack engineer with 6 years of experience building enterprise applications for fortune 500 companies, including both Fannie Mae and Capital One. Notably, he was the lead engineer of Capital One's "Bank Case Management" system, has lead several development teams to quickly and successfully bring products to market while adhering to the strictest code quality and testing practices, and has acted as a mentor to other developers. Additionally, he holds a breadth of knowledge in many languages and programming paradigms and has built several open-source projects, including a proof of work blockchain written in Go, an OpenCV-based augmented reality application for Android, as well as experiments in home automation and machine learning. More recently, he is the founder and lead engineer at Ideal Labs, where he single-handedly designed the Iris blockchain and implemented the prototype, which was funded via a web3 foundation grant. He is passionate about decentralized technology and strives to make the promises of decentralization a reality.
+
+Tony is a full-stack engineer with over 6 years of experience building enterprise applications for fortune 500 companies, including both Fannie Mae and Capital One. Notably, he was the lead engineer of Capital One's "Bank Case Management" system, has lead several development teams to quickly and successfully bring products to market while adhering to the strictest code quality and testing practices, and has acted as a mentor to other developers. Additionally, he holds a breadth of knowledge in many languages and programming paradigms and has built several open-source projects, including a proof of work blockchain written in Go, an OpenCV-based augmented reality application for Android, as well as experiments in home automation and machine learning. More recently, he is the founder and lead engineer at Ideal Labs, where he single-handedly designed the Iris blockchain and implemented the prototype, which was funded via a web3 foundation grant. He is passionate about decentralized technology and strives to make the promises of decentralization a reality.
 
 **Developer X**
-TODO.
+
+We intend to find another developer to contribute after milestone 1. We are currently discussing this with several potential interested parties. We will ammend this proposal once this role is filled. If it is not filled by the time milestone 1 is completed, we will submit an ammendement that reflects this as well.
 
 **Sebastian Spitzer**
-Intrapreneur, business builder, networker and technology scout.
 
-Originally started in marketing, Sebastian ventured into innovation and has built up innovation processes and networks in 3 different verticals. He manages the funnel from ideation to pilots and scaling, and successfully transitioned companies to agile innovation using lean startup and design thinking concepts.
+Sebastian started his career in marketing, from where he ventured into innovation management and built up innovation units and startup ecosystems in 3 verticals.
 
-Besides pitching 30+ business concepts at CxO level, he scaled-up 2 concepts as an intrapreneur, adding 2m+ of annual turnover within the first 2 years to market.
+Essentially working as an intrapreneur in the automotive sector for the last 6 years, he managed the entire funnel from ideation to piloting and ultimately scaling digital solutions. In the last 3 years he scaled up 2 projects, adding 2m+ of annual turnover within the first 2 years to market.
 
-He loves working with creative minds and supports start-ups on their journey through value proposition, business plan, strategy and market fit.
+In 2016 he first came into contact with the Blockchain space when scouting new tech and got deeply immersed when he saw the disruptive potentials. Since then he has become an advisor for two projects, supporting them in their growth to 200m+ market caps, worked as a dealflow manager/analyst for a crypto VC and helped founders on their early stage journey in the space.
 
-He is actively immersed in global VC and start-up ecosystems and has built a strong footprint in the Blockchain industry since 2016 as a tech scout, advisor and consultant. He supported 2 projects from inception to reaching 200m+ market caps and assists dealflow activities for a VC in the space, analyzing projects along their tech, team and market and working closely with founders to ensure their success.
+In 2019 he authored a research paper on why the data economy in the automotive industry fails. Since then he was looking for an adequate solution and co-founded IdeaLabs 2 years later after discovering Tony's initial work.
 
 **Brian Thamm**
+
 Brian Thamm has over a decade of experience leading large data initiatives in both the Commercial and U.S. Federal Sectors.
 
 After several years working with companies ranging from the Fortune 500 to startups, Brian decided to focus on his passion for enabling individuals to use data to improve their decision-making by starting Sophinea. Since its founding in late 2018, Sophinea has lead multi-national Data Analytics Modernization efforts in support of the United State’s Department of State and the National Institutes of Health.
@@ -263,7 +265,6 @@ Brian believes that data-driven success is something that often requires top lev
 Please also provide the GitHub accounts of all team members. If they contain no activity, references to projects hosted elsewhere or live are also fine.
 
 - https://github.com/driemworks
-- https://github.com/<team_member_2>
 
 ### Team LinkedIn Profiles (if available)
 
@@ -273,7 +274,7 @@ https://www.linkedin.com/in/sebastian-s-253502159/
 
 ## Development Status :open_book:
 
-As stated earlier in the [prior work](#prior-work) section, we have delivered the three milestones detailed as part of the intiial Iris grant proposal. Additionally, we have also synced the Iris repository with the latest substrate master branch as well as have upgraded to use the latest rust-ipfs version (see here: TODO).
+As stated earlier in the [prior work](#prior-work) section, we have delivered the three milestones detailed as part of the intiial Iris grant proposal. Additionally, we have also synced the Iris repository with the latest substrate master branch as well as have upgraded to use the latest rust-ipfs version (see here: [d9e14294c89abd2c085e91d8312041245b5d3b35](https://github.com/ideal-lab5/substrate/commit/d9e14294c89abd2c085e91d8312041245b5d3b35)).
 
 ## Development Roadmap :nut_and_bolt:
 
@@ -287,7 +288,7 @@ As stated earlier in the [prior work](#prior-work) section, we have delivered th
 
 - **Estimated duration:** 1 month
 - **FTE:**  1.5
-- **Costs:** 10,000 USD
+- **Costs:** 8,000 USD
 
 This milestone delivers the creation of data spaces, the ability to manage data spaces associated with data, and lays the groundwork for future data-space moderation capabilities. It also delivers composable access rules to the Iris network, allowing data owners to specify unique business models that consumers must adhere to across any number of data spaces.
 
@@ -297,16 +298,18 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0b. | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
 | 0c. | Testing Guide | Core functions will be fully covered by unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. We will provide a demo video and a manual testing guide, including environment setup instructions. |
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
-| 1. | Substrate module: Iris-Spaces | Create a pallet, similar to iris-assets pallet, that acts as a wrapper around the assets pallet and allows nodes to construct new data spaces and mint data space access tokens. |  
-| 2. | Substrate module: Iris-Assets | Modify the iris-assets pallet to allow nodes to specify data spaces with which to associate their data. Additionally, we implement the logic required to verify that the data owner holds tokens to access the space. |  
-| 3. | Contracts | Create the trait definition for a Composable Access Rule and develop the following composable access rules: limited use token: allow a token associated with an asset id to be used only 'n' times perishable token: allow a token associated with an asset id to be used only before some specific date |  
-| 4. | Substrate Module: Iris-Assets | Execute composable access rules associated with an asset id when requesting data from Iris. |  
+| 1. | Substrate module: DataSpaces | Create a pallet, similar to iris-assets pallet, that acts as a wrapper around the assets pallet and allows nodes to construct new data spaces and mint data space access tokens. |  
+| 2. | Substrate module: Iris-Assets | Modify the iris-assets pallet to allow nodes to specify data spaces with which to associate their data. Additionally, we implement the logic required to verify that the data owner holds tokens to access the space. |
+| 3. | Substrate Module: Iris-Session node routing layer | Implement a service to agree on which validator nodes are responsible for proxying IPFS requests and verifying asset class association with data spaces, only allow selected nodes to submit onchain extrinsics that submit ipfs results and associate asset classes with data spaces |
+| 4. | Contracts | Create the trait definition for a Composable Access Rule and develop the following composable access rules: limited use token: allow a token associated with an asset id to be used only 'n' times perishable token: allow a token associated with an asset id to be used only before some specific date |  
+| 5. | Substrate Module: Iris-Assets | Execute composable access rules associated with an asset id when requesting data from Iris. |
+| 6. | User Interface | We will update the user interface to allow users to create and manage data spaces, associate asset classes with data spaces, and view data in data spaces. Additionally, we allow consumers to view which composable access rules are associated with an asset class. |
 
 ### Milestone 2 - Proxy/Gateway Nodes
 
 - **Estimated Duration:** 1 months
 - **FTE:**  2.5
-- **Costs:** 30,000 USD
+- **Costs:** 15,000 USD
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
@@ -315,15 +318,16 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0c. | Testing Guide | Core functions will be fully covered by unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. We will provide a demo video and a manual testing guide, including environment setup instructions. |
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
 | 1. | Substrate Module: Iris-Proxy: Proxy Node creation | Implement mechanism to allow nodes to act as a proxy, including verification of network connection speed. |
-| 2. | Substrate Pallet: Iris-Proxy: Proxy Routing Service | Implement a routing layer to assign incoming data ingestion requests to proxy nodes |
+| 2. | Substrate Pallet: Iris-Proxy: Proxy Routing Service | Implement a routing layer to assign incoming data ingestion requests to proxy nodes. This is an extension of milestone 1, part 3. |
 | 3. | Offchain Module: Data Ingestion + Reception Server | Build an offchain client using Go that allows data owners to make data available to proxy nodes and data consumers to receive data streams from proxy nodes |
 | 4. | Substrate Module: Iris-Proxy | Implement offchain service to fetch data from a data-owners offchain server and stream bytes to data-consumers |
+| 6. | User Interface | We modify the user interface to use the offchain client for data ingestion as well as to view data that has been made available to the offchain client. |
 
 ### Milestone 3 - Storage System
 
 - **Estimated Duration:** 2 months
 - **FTE:**  2.5
-- **Costs:** 40,000 USD
+- **Costs:** 30,000 USD
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
