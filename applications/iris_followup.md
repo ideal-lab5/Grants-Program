@@ -307,7 +307,7 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 
 ### Milestone 2 - Proxy/Gateway Nodes
 
-- **Estimated Duration:** 1 months
+- **Estimated Duration:** 1 month
 - **FTE:**  2.5
 - **Costs:** 15,000 USD
 
@@ -341,10 +341,11 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 4. | Substrate Module: Iris-Storage | Implement Storage Node routing module to match storage requests with nodes who meet minimal requirements as defined by data owners |
 | 5. | Substrate Module: Iris-Storage | Implement  the T-MAN protocol and the relative scoring function |
 | 6. | Substrate Module: Iris-Storage | Implement the stochastic replication game to ensure availability and replication of data |
+| 7. | User Interface | We modify the user interface to allow data owners to rent storage space within the network, as well as a simple view for storage nodes to view rewards that they have accrued. |
 
 ## Milestone 4 - Javascript SDK and other apps
 
-- **Estimated Duration:** 1 months
+- **Estimated Duration:** 1 month
 - **FTE:**  2
 - **Costs:** 10,000 USD
 
