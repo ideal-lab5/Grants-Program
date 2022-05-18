@@ -14,11 +14,11 @@ This is a follow-up grant to Iris:
 
 ### Overview
 
-Iris is a decentralized network that provides a secure data storage, delivery, and ownership layer for Web 3.0 applications. It is infrastructure for the decentralized web, providing a storage and data exchange which enables the transfer and monetization of access to and ownership of data across chains, smart contracts and participants in the network or connected through a relay chain. Iris provides security, availability, reputation, and governance on top of IPFS, enabling data ownership, access management, and the commodification of latent storage capacity and content delivery. It applies defi concepts to data, reputation, storage capacity and availability to synthesize computation and storage and to represent off-chain assets in an on-chain context. Unlike many other solutions that aim to decentralize storage, we build a cryptographically verifiable relationship between data storage, access and ownership. Ideal Labs wants to be the forefront of the next data revolution, and to help build the tools needed for a transparent and fair data economy.
+Iris is a decentralized network that provides a secure data storage, delivery, and ownership layer for Web 3.0 applications. It is infrastructure for the decentralized web, providing a storage and data exchange which enables the transfer and monetization of access to and ownership of data across chains, smart contracts and participants in the network or connected through a relay chain. Iris provides security, availability, reputation, and governance on top of IPFS, enabling data ownership, access management, and the commodification of latent storage capacity and content delivery. It applies defi concepts to data, reputation, storage capacity and availability to synthesize computation and storage and to represent off-chain assets in an on-chain context. We build a cryptographically verifiable relationship between data storage, access and ownership. Ideal Labs wants to be the forefront of the next data revolution, and to help build the tools needed for a transparent and fair data economy.
 
 ### Project Details
 
-The intention of this follow-up grant is to implement several features that enable Iris to be a secure, social, and highly-available storage network without compromising decentralization. In our system, data owners associate their data with any number of 'data spaces' which each have specific rule sets and inclusion policies. We also lay the foundations for our encryption scheme (we intend use a novel proxy re-encryption mechanism, though the implementation of this mechanism is out of the scope of this proposal) by introducing the concept of the proxy node which will act as the linchpin for re-encryption in the future, as well as allows data owners and data consumers to run light clients (as they no longer are required to run the full node and add data to the embedded IPFS node). We also introduce a game-theoretic framework for ensuring replication and availability of data within the storage layer of Iris. Additionally we introduce "composable access rules", which allow data owners to specify rules which are implicitly enforced when consumers access their data. Lastly, we will build a javascript SDK to allow user interfaces for dapps built on Iris to easily build applications and interface with Iris.
+The intention of this follow-up grant is to implement several features that enable Iris to be a secure, social, and highly-available storage network without compromising decentralization. In our system, data owners associate their data with any number of 'data spaces' which each have specific rule sets and inclusion policies. We also lay the foundations for our encryption scheme (we will use a threshold encryption mechanism, though the implementation of this is out of scope for this proposal) by introducing the concept of the proxy node which will act as the linchpin for re-encryption in the future, as well as allows data owners and data consumers to run light clients (as they no longer are required to run the full node and add data to the embedded IPFS node). We also introduce a game-theoretic framework for ensuring replication and availability of data within the storage layer of Iris. Additionally we introduce "composable access rules", which allow data owners to specify rules which are implicitly enforced when consumers access their data. Lastly, we will build a javascript SDK to allow user interfaces for dapps built on Iris to easily build applications and interface with Iris.
 
 This proposal makes several improvements on top of the existing Iris blockchain, specifically in terms of security, extensibility, data organiziation, and data ingestion/ejection.
 
@@ -26,7 +26,7 @@ To summarize, in the following we propose:
 
 - the introduction of "data spaces"
 - the implementation of "composable access rules" to apply custom business logic to data
-- the introduction of "proxy nodes" that enable proxy re-encryption within the network
+- the introduction of "proxy nodes" that enable threshold encryption within the network
 - the implementation of an availability-encouraging storage system
 - a javascript SDK to allow dapp developers to easily build front ends for smart contracts on Iris
 
@@ -47,13 +47,13 @@ Languages:
 
 #### Terminology
 
-- Data Asset Class and Data Asset: A **data asset class** is an asset class which is associated with some owned data, as identified by its CID, which has been ingested into the Iris storage system at some point in the past (does not necessarily mean it is currently available in Iris). A **data asset** is an asset minted from the data asset class.
+- Data Asset Class and Data Asset: A **data asset class** is an asset class which is associated with some owned data which has been ingested into the Iris storage system at some point in the past. A **data asset** is an asset minted from the data asset class.
 
 - Data Owner: A **data owner** is any node that has initiated the ingestion of some data and owns a data asset class. In the following, we may refer to data owners as "Alice".
 
 - Data Consumer: A **data consumer** is any node that owns a data asset minted from a data asset class. In the following, we may refer to data consumers as "Bob".
 
-- Proxy Node: A **proxy node** is any node that has the minimum requried hardware requirements and has staked the minimum required amount IRIS tokens to become a proxy node.
+- Proxy Node: A **proxy node** is any node that has the minimum required hardware requirements and has staked the minimum required amount IRIS tokens to become a proxy node.
 
 - Storage Node: A **storage node** is any node that has staked the minimum required amount IRIS tokens to become a storage node.
 
@@ -69,7 +69,7 @@ Further, data spaces form the basis for moderation, or curation, within the netw
 
 #### Composable Access Rules
 
-Iris enables data owners to determine rules that consumers must follow when requesting their data from the network. These rules could include: limited use access tokens, minimum token requirements, time sensitive tokens, and many other use cases. We accomplish this through a set of smart contracts called composable access rules (CARs). They are composable in the sense that the data owner may specify any number of rules, each of which must be validated when a consumer requests data. In general, each rule stipulates a condition which, when met, results in the consumer being blocked from accessing data or in their token(s) being burned. If the token is not burned by the end of execution of each CAR, then the consumer can proceed to fetch the data. In general, the greater the number of CARs, the more costly it will be for consumers to access the data, since they must pay for each one to be executed.
+Iris enables data owners to determine rules that consumers must follow when requesting their data from the network. These rules could include: limited use access tokens, minimum token requirements, time sensitive tokens, and many other use cases. We accomplish this through a set of smart contracts called composable access rules (CARs). They are composable in the sense that the data owner may specify any number of rules, each of which must be validated when a consumer requests data. In general, each rule stipulates a condition which, when met, results in the consumer being blocked from accessing data or in their token(s) being burned. For example, a "limited use token contract" would track the number of times a token is used to fetch data, and forces that token to be burned once the threshold is reached. If the token is not burned by the end of execution of each CAR, then the consumer can proceed to fetch the data. In general, the greater the number of CARs, the more costly it will be for consumers to access the data, since they must pay for each one to be executed.
 
 A composable access rule must implement the following functions:
 
@@ -80,7 +80,7 @@ With these two functions implemented and the contract deployed to the chain, dat
 
 #### Proxy Nodes and offchain clients for data ingestion/ejection
 
-Proxy nodes form the basis of secure data ingestion and ejection from the network. Ultimately, these nodes will be responsible for powering Iris's proxy re-encryption mechanism. This mechanism is out of the scope of the current proposal, however, we will create this node role to provide the foundation for subsequent work in which the proxy re-encryption scheme will be implemented, as well as make data ingestion/ejection workflows easier for data owners and conusmers. In the implementation proposed here, these nodes simply act as ingress and egress points to/from the IPFS network. Additionally, we will implement zk proofs that are submitted on-chain once the offchain worker adds data to IPFS and publishes the cid onchain (which results in the creation of a data asset). Though proxy nodes do not increase the security of the network at this point, they do remove the dependency on data consumers and data owner to run a full Iris node to enable data ingestion and ejection.
+Proxy nodes form the basis of secure data ingestion and ejection from the network. Ultimately, these nodes will be responsible for powering Iris's threshold encryption mechanism. This mechanism is out of the scope of the current proposal, however, we will create this node role to provide the foundation for subsequent work in which the threshold encryption scheme will be implemented, as well as make data ingestion/ejection workflows easier for data owners and consumers. In the implementation proposed here, these nodes simply act as ingress and egress points to/from the IPFS network. Though proxy nodes do not increase the security of the network at this point, they do remove the dependency on data consumers and data owner to run a full Iris node to enable data ingestion and ejection.
 
 Putting data spaces and proxy nodes together, we arrive at the following design:
 
@@ -90,7 +90,7 @@ Putting data spaces and proxy nodes together, we arrive at the following design:
 
 The inclusion of proxy nodes impacts data ingestion and ejection workflows. We will build a secure offchain client using Go in order to serve files for ingestion by proxy nodes and to listen for data sent by proxy nodes when requested from the network.
 
-In the initial design of Iris, data ingestion functioned by allowing a data owner, who is running a full iris node, to add some data to their embedded IPFS node to gossip with a validator node, who would then add the data to their own embedded IPFSS node, which is connected with other validator nodes. This poses several issues. Not only is it insecure, but also it forces data owners to always run a full node which limits the ease of use of the system. Similarly, data ejection functioned by allowing a data consumer to directly connect their embedded IPFS node to a validator node to retrieve data from the 'validator network', which introduced a similar set of issues that data owners would face. Proxy nodes allow us to sidestep both of these issues by acting as a gateway into the IPFS network. To accomplish data ingestion, nodes will run an offchain client, which acts as a file server that only authorized proxy nodes can call into..
+In the initial design of Iris, data ingestion functioned by allowing a data owner, who is running a full iris node, to add some data to their embedded IPFS node to gossip with a validator node, who would then add the data to their own embedded IPFSS node, which is connected with other validator nodes. This poses several issues. Not only is it insecure, but also it forces data owners to always run a full node which limits the ease of use of the system. Similarly, data ejection functioned by allowing a data consumer to directly connect their embedded IPFS node to a validator node to retrieve data from the 'validator network', which introduced a similar set of issues that data owners would face. Proxy nodes allow us to circumvent both of these issues by acting as a gateway to the IPFS network. To accomplish data ingestion, nodes will run an offchain client, which acts as a file server that only authorized proxy nodes can call into.
 
 ![data ingestion](https://github.com/ideal-lab5/Grants-Program/blob/iris_followup/src/data_injection.drawio.png)
 
@@ -100,7 +100,7 @@ For data ejection, data consumers run the offchain client which will listen for 
 
 #### Proxy Node Reward Structure
 
-Each data ingestion and ejection transaction has an additional transaction fee which is then pooled together and distributed to proxy nodes at the end of a session based on their online presence.
+Each data ingestion and ejection transaction has an additional transaction fee which is then pooled together and distributed to proxy nodes at the end of a session based on their participation during the session. This will function similarly to how proof of stake consensus algorithms reward validator nodes when new blocks are accepted into the chain.
 
 #### Availability-Encouraging Replication Mechanism
 
@@ -158,7 +158,7 @@ The IRIS-OBOL conversion rate is a function of the ratio of storage available to
 
 #### IRIS SDK
 
-We intend to adapt the user interface developed as part of the initial Iris grant proposal for usage as an SDK for dapp developers on Iris. The SDK will facilitate development of user interfaces for contracts running on the Iris blockchain. As an exmaple, the Iris Asset Exchange UI from the initial grant proposal is one such application. We will adapt the current Iris UI to use this new SDK as well as demonstrate how to develop a simple data access marketplace.
+We intend to adapt the user interface developed as part of the initial Iris grant proposal for usage as an SDK for dapp developers on Iris. The SDK will facilitate development of user interfaces for contracts running on the Iris blockchain. As an example, the Iris Asset Exchange UI from the initial grant proposal is one such application. We will adapt the current Iris UI to use this new SDK as well as demonstrate how to develop a simple data marketplace.
 
 Specifically, we intend to adapt the SDK from the functions available in these files: [https://github.com/ideal-lab5/ui/tree/master/src/services](https://github.com/ideal-lab5/ui/tree/master/src/services).
 
@@ -170,11 +170,11 @@ This proposal is a followup to a completed web3 foundation grant which laid the 
 - a naïve validator-based storage system  that encourages storage of 'valuable' data
 - support for contracts and a rudimentary decentralized exchange to purchase and sell data access rights
 
-In addition to these items, the Iris fork of substrate has been upgraded to by in sync with the latest substrate master branch and we have also upgraded the runtime to use the latest version of rust-ipfs.
+In addition to these items, the Iris fork of substrate has been upgraded to by in sync with the latest substrate master branch and we have also upgraded the runtime to use the latest version of rust-ipfs (see here: [d9e14294c89abd2c085e91d8312041245b5d3b35](https://github.com/ideal-lab5/substrate/commit/d9e14294c89abd2c085e91d8312041245b5d3b35)).
 
 #### Limitations and Expectations
 
-Iris is *not* intended to act as a decentralized replacement for traditional cloud storage or to be a competitor to existing centralized data storage solutions. We are aware that Amazon could artifically deflate the price of S3 buckets down to $0 and still make billions a year, while this project would inevitably implode.
+Iris is *not* intended to act as a decentralized replacement for traditional cloud storage or to be a competitor to existing centralized data storage solutions. We are aware that Amazon could artifically deflate the price of S3 buckets down to $0 and still wildly profit. Further, this proposal does not address security (i.e. threshold encryption) in the network, not does it appproach moderation capabilities, though it does lay the foundation for those items to be implemented in the next phase of development.
 
 ### Ecosystem Fit
 
@@ -194,14 +194,15 @@ Iris is *not* intended to act as a decentralized replacement for traditional clo
     - Unlike other solutions, Iris uses an embedded IPFS network to accomplish offchain storage of data. This allows us to leverage many of the features of IPFS without reinventing the wheel.
     - Iris uses a game theoretic approach to create an availability-encouraging storage system.
     - Iris uses DeFi concepts not only to cryptographically associate data ownership with data availability, but also so build access rules and rights.
-    - Iris believes that not all data is equal and though we do not intend to impose any type of authority in terms of moderation or censorship, we provide mechanisms for data owners to create curated data enclaves. Although we believe that decentralization is the way forward, we see the inherent issues that arise out of an open systems where data is essentially un-removable.
+    - Iris believes that not all data is equal and though we do not intend to impose any type of authority in terms of moderation or censorship, we provide mechanisms for data owners to create curated data enclaves. Although we believe that decentralization is the way forward, we see the inherent issues that arise out of an open systems where data is essentially un-removable, and so we provide mechanisms through which consensus can result in the purging of data or data spaces entirely.
 
 There are several existing decentralized storage networks that already exist, including:
 
-- filecoin: The eminent storage system built on top of IPFS.
+- filecoin
 - storj
 - siacoin
-- theta: A storage system that emphasizes data streaming and has a robust data delivery network.
+- theta
+- arweave
 
 Iris differs from these networks in many ways. These networks generally store data openly, do not maintain on-chain ownership, and do not have the cross-chain capabilities that Iris is capable of supporting.
 
@@ -223,11 +224,11 @@ Brian Thamm: co-founder
 ### Legal Structure
 
 - **Registered Address:** TBD, in progress
-- **Registered Legal Entity:** Ideal Labs, Ltd.
+- **Registered Legal Entity:** Ideal Labs (TBD)
 
 ### Team's experience
 
-Iridium Labs is composed of a group of individuals coming from diverse backgrounds across tech, business, and marketing, who all share a collective goal of realizing a decentralized storage layer that can facilitate the emergence of dapps that take advantage of decentralized storage.
+Ideal Labs is composed of a group of individuals coming from diverse backgrounds across tech, business, and marketing, who all share a collective goal of realizing a decentralized storage layer that can facilitate the emergence of dapps that take advantage of decentralized storage.
 
 **Tony Riemer**
 
@@ -235,7 +236,7 @@ Tony is a full-stack engineer with over 6 years of experience building enterpris
 
 **Developer X**
 
-We intend to find another developer to contribute after milestone 1. We are currently discussing this with several potential interested parties. We will ammend this proposal once this role is filled. If it is not filled by the time milestone 1 is completed, we will submit an ammendement that reflects this as well.
+We intend to find another developer (potentially two) to contribute after milestone 1. We are currently discussing this with several interested parties. We will ammend this proposal once this role is filled. If it is not filled by the time milestone 1 is completed, we will submit an ammendement that reflects this as well.
 
 **Sebastian Spitzer**
 
@@ -245,7 +246,7 @@ Essentially working as an intrapreneur in the automotive sector for the last 6 y
 
 In 2016 he first came into contact with the Blockchain space when scouting new tech and got deeply immersed when he saw the disruptive potentials. Since then he has become an advisor for two projects, supporting them in their growth to 200m+ market caps, worked as a dealflow manager/analyst for a crypto VC and helped founders on their early stage journey in the space.
 
-In 2019 he authored a research paper on why the data economy in the automotive industry fails. Since then he was looking for an adequate solution and co-founded IdeaLabs 2 years later after discovering Tony's initial work.
+In 2019 he authored a research paper on why the data economy in the automotive industry fails. Since then he was looking for an adequate solution and co-founded Ideal Labs 2 years later after discovering Tony's initial work.
 
 **Brian Thamm**
 
@@ -280,15 +281,15 @@ As stated earlier in the [prior work](#prior-work) section, we have delivered th
 
 ### Overview
 
-- **Total Estimated Duration:** 5 months
+- **Total Estimated Duration:** 5 months (20 weeks)
 - **Full-Time Equivalent (FTE):**  2.5 FTE
-- **Total Costs:** 90,000
+- **Total Costs:** 73,000
 
 ### Milestone 1 — Implement Data Spaces and Composable Access Rules
 
 - **Estimated duration:** 1 month
 - **FTE:**  1.5
-- **Costs:** 8,000 USD
+- **Costs:** 9,000 USD
 
 This milestone delivers the creation of data spaces, the ability to manage data spaces associated with data, and lays the groundwork for future data-space moderation capabilities. It also delivers composable access rules to the Iris network, allowing data owners to specify unique business models that consumers must adhere to across any number of data spaces.
 
@@ -300,16 +301,15 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
 | 1. | Substrate module: DataSpaces | Create a pallet, similar to iris-assets pallet, that acts as a wrapper around the assets pallet and allows nodes to construct new data spaces and mint data space access tokens. |  
 | 2. | Substrate module: Iris-Assets | Modify the iris-assets pallet to allow nodes to specify data spaces with which to associate their data. Additionally, we implement the logic required to verify that the data owner holds tokens to access the space. |
-| 3. | Substrate Module: Iris-Session node routing layer | Implement a service to agree on which validator nodes are responsible for proxying IPFS requests and verifying asset class association with data spaces, only allow selected nodes to submit onchain extrinsics that submit ipfs results and associate asset classes with data spaces |
-| 4. | Contracts | Create the trait definition for a Composable Access Rule and develop the following composable access rules: limited use token: allow a token associated with an asset id to be used only 'n' times perishable token: allow a token associated with an asset id to be used only before some specific date |  
-| 5. | Substrate Module: Iris-Assets | Execute composable access rules associated with an asset id when requesting data from Iris. |
-| 6. | User Interface | We will update the user interface to allow users to create and manage data spaces, associate asset classes with data spaces, and view data in data spaces. Additionally, we allow consumers to view which composable access rules are associated with an asset class. |
+| 3. | Contracts | Create the trait definition for a Composable Access Rule and develop the following composable access rules: limited use token: allow a token associated with an asset id to be used only 'n' times perishable token: allow a token associated with an asset id to be used only before some specific date |  
+| 4. | Substrate Module: Iris-Assets | Execute composable access rules associated with an asset id when requesting data from Iris. |
+| 5. | User Interface | We will update the user interface to allow users to create and manage data spaces, associate asset classes with data spaces, and view data in data spaces. Additionally, we allow consumers to view which composable access rules are associated with an asset class. |
 
 ### Milestone 2 - Proxy/Gateway Nodes
 
 - **Estimated Duration:** 1 month
 - **FTE:**  2.5
-- **Costs:** 15,000 USD
+- **Costs:** 18,000 USD
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
@@ -318,16 +318,16 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 | 0c. | Testing Guide | Core functions will be fully covered by unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. We will provide a demo video and a manual testing guide, including environment setup instructions. |
 | 0d. | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
 | 1. | Substrate Module: Iris-Proxy: Proxy Node creation | Implement mechanism to allow nodes to act as a proxy, including verification of network connection speed. |
-| 2. | Substrate Pallet: Iris-Proxy: Proxy Routing Service | Implement a routing layer to assign incoming data ingestion requests to proxy nodes. This is an extension of milestone 1, part 3. |
+| 2. | Substrate Pallet: Iris-Proxy: Proxy Routing Service | Implement a routing layer to assign incoming data ingestion requests to proxy nodes. This will function similarly to how proof of stake algorithms choose validator nodes to add blocks. |
 | 3. | Offchain Module: Data Ingestion + Reception Server | Build an offchain client using Go that allows data owners to make data available to proxy nodes and data consumers to receive data streams from proxy nodes |
 | 4. | Substrate Module: Iris-Proxy | Implement offchain service to fetch data from a data-owners offchain server and stream bytes to data-consumers |
-| 6. | User Interface | We modify the user interface to use the offchain client for data ingestion as well as to view data that has been made available to the offchain client. |
+| 5. | User Interface | We modify the user interface to use the offchain client for data ingestion as well as to view data that has been made available to the offchain client. |
 
 ### Milestone 3 - Storage System
 
 - **Estimated Duration:** 2 months
 - **FTE:**  2.5
-- **Costs:** 30,000 USD
+- **Costs:** 36,000 USD
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
@@ -360,7 +360,7 @@ This milestone delivers the creation of data spaces, the ability to manage data 
 
 ## Future Plans
 
-- We intend to continue development after this proposal is completed. Specifically, we plan to consult with cryptography experts to determine the best approach for implementing a robust, performant, and secure **proxy re-ecnryption** scheme. Additionally, we intend to implement an **anonymous reputation system** for submitting feedback for data, data owners, and data spaces. We also plan to implement a robust **moderation and governance** protocol, which includes the execution of machine learning models and other security/verification checks (such as bayseian filters) within a **trust execution environment**.
+- We intend to continue development after this proposal is completed. Specifically, we plan to consult with cryptography experts to determine the best approach for implementing a robust, performant, and secure **threshold ecnryption** scheme. Additionally, we intend to implement an **anonymous reputation system** for submitting feedback for data, data owners, and data spaces. We also plan to implement a robust **moderation and governance** protocol, which includes the execution of machine learning models and other security/verification checks (such as bayseian filters) within a **trust execution environment**.
 - We will work with dapp developers to assist in develop of applications on Iris. We are already in communication with several projects that are interested in leveraging Iris as their storage system.
 - We will strive to become a parachain on Kusama and Polkadot
 - We will continue to expand the features available in Iris, such as partial ownership of assets, selling ownership of asset classes, and more
