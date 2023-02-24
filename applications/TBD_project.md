@@ -19,7 +19,7 @@ If this is an application for a follow-up grant (the continuation of an earlier,
 **Secret Stuff** is a Blockchain Backed Decentralized Secret Manager.
 
 We use passwords and secrets everyday, in the best case scenario we use a localy hosted or a centralized password manager to store them. 
-Now imagine that our local storage gets destroyed, or the centralized password manager goes out of business? We could potentially lose all our secrets.
+Now imagine that our local storage gets destroyed, or the centralized password manager goes out of business, like [ScretHub](https://secrethub.io/)? We could potentially lose all our secrets.
 
 But what if we could store them in a decentralized way, and have them available to us when we need them, without having to trust a third party?
 
@@ -100,19 +100,29 @@ Help us locate your project in the Polkadot/Substrate/Kusama landscape and what 
 - Are there any other projects similar to yours in the Substrate / Polkadot / Kusama ecosystem?
   - If so, how is your project different?
   - If not, are there similar projects in related ecosystems?
+---
+- This initial step in the project is to create a FRAME pallet.
+- **Secret Stuff** is oriented to help end users.
+- It stores their secrets in a decentralized way, and have them available to them when they need them, without having to trust a third party.
+- There are no similar projects in the Substrate / Polkadot / Kusama ecosystem. We have found though that there are projects that are somehow similar in other ecosystems:
+  - [b.lock](https://github.com/BlockProject/b-lock)
+  - [DaPassword](https://cardano.ideascale.com/c/idea/332494)
+  - [Blockchain password](https://margatroid.github.io/blockchain-password/#/)
+  - [You](https://medium.com/airgap-it/you-the-decentralized-password-manager-2f521cced7be)
 
 ## Team :busts_in_silhouette:
 
 ### Team members
 
-- Name of team leader
-- Names of team members
+- Tony Riemer
+- Carlos Montoya
+- Juan Girini
 
 ### Contact
 
 - **Contact Name:** Full name of the contact person in your team
 - **Contact Email:** Contact email (e.g. john@duo.com)
-- **Website:** Your website
+- **Website:** https://www.idealabs.network/
 
 ### Legal Structure
 
