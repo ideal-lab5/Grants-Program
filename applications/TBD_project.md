@@ -16,19 +16,18 @@ If this is an application for a follow-up grant (the continuation of an earlier,
 
 ### Overview
 
-Please provide the following:
+**Secret Stuff** is a Blockchain Backed Decentralized Secret Manager.
 
-- If the name of your project is not descriptive, a tag line (one sentence summary).
-A decentralized secret manager.
+We use passwords and secrets everyday, in the best case scenario we use a localy hosted or a centralized password manager to store them. 
+Now imagine that our local storage gets destroyed, or the centralized password manager goes out of business? We could potentially lose all our secrets.
 
-- A brief description of your project.
-The project is a new pallet that uses ZKSnarks and ECDH over curve25519 to encrypt messages and secretly add to a blockchain for later retrieval. All encrypion and decryption happens offchain within the client. The project will create a new pallet that allows a user to secretly add 'secret messages' and retrieve them.
+But what if we could store them in a decentralized way, and have them available to us when we need them, without having to trust a third party?
 
-- An indication of how your project relates to / integrates into Substrate / Polkadot / Kusama.
-The project is a substrate based project.
+**Secret Stuff** is a decentralized secret manager that runs on the blockchain and allows you to store your secrets in a decentralized way, and have them available to you when you need them, without having to trust a third party.
 
-- An indication of why your team is interested in creating this project.
-The team believes in a future where data is owned by the individual, and the data owner should have total autonomy over how that data is used.
+The project is a substrate based project. It is specifically a new pallet that uses ZKSnarks and ECDH over curve25519 to encrypt messages and secretly add to a blockchain for later retrieval. All encrypion and decryption happens offchain within the client. The project will create a new pallet that allows a user to secretly add 'secret messages' and retrieve them.
+
+The **Secret Stuff** team believes in a future where data is owned by the individual, and the data owner should have total autonomy over how that data is used.
 
 ### Project Details
 
@@ -42,6 +41,49 @@ We expect the teams to already have a solid idea about your project's expected f
 - What your project is _not_ or will _not_ provide or implement
   - This is a place for you to manage expectations and to clarify any limitations that might not be obvious
 
+Using plain asymmetric encryption on the password blob, the entire doc is put in IPFS, and simply stored the association (AccountId32 -> encrypted CID of encrypted password file). Then when the owner wants to recover a password, they just need to recover the entire file. This is done by first decrypting the CID, then fetching the CID and decrypting the ciphertext to get the owner's passwords. Unless the owner has some crazy number of passwords, doing this from time-to-time shouldn’t be an issue, computationally. This isn’t specifically privacy preserving, but it is a starting point that can be factored in later. 
+
+#### To encrypt:
+
+```mermaid
+graph LR
+    
+    Owner["Password
+    Owner"] --- Plain("{
+      #quot;netflix#quot;: #quot;1234qwer#quot;,
+      #quot;acm#quot;: #quot;5678erty#quot;
+    }")
+    Plain --> Encrypt
+    Encrypt --> Cipher(Ciphertext)
+    Cipher -->IPFS[(IPFS)]
+    IPFS --> CID["Encrypt
+    CID"]
+    CID --> Register["#quot;Register#quot; secrets
+    blob: AccountId -> Encrypted CID"]
+    Owner --> Register
+```
+
+#### To recover passwords:
+
+ It’s just the opposite. Recovery is read-only and would come at no cost to the password owner, as it should be. Access to their own data should never come with a financial barrier.
+
+```mermaid
+graph LR
+    
+    Owner["Password
+    Owner"] --> Get["Get encrypted CID
+    from runtime storage"]
+    Get --> Recover["Recover
+    &#40;decrypt&#41; CID"]
+    Recover --> Fetch["Fetch ciphertext
+    from IPFS"]
+    Fetch --> Decrypt["Recover
+    &#40;decrypt&#41; plaintext"]
+    Decrypt --> Plain("{
+      #quot;netflix#quot;: #quot;1234qwer#quot;,
+      #quot;acm#quot;: #quot;5678erty#quot;
+    }")
+```
 
 Things that shouldn’t be part of the application (see also our [FAQ](../docs/faq.md)):
 - The (future) tokenomics of your project 
