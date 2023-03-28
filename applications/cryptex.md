@@ -149,7 +149,13 @@ TODO
 - We will build a DKG pallet. The DKG pallet:
   - stores and manages a queue to issue DKG requests
   - 
-
+- We will build a SDK with the following capabilities to allow developers and protocols to interact with cryptex:
+  - **Encryption:** provides types and functions to encrypt and decrypt secrets. 
+  - **VSS Client:** provides types and functions to interact with the protocol, some examples of such interactions are encryption key requests and secret sharing requests.
+  - **ZK:** provides types and functions to define zk-SNARKS and Zero-knowledge proofs. They are required as part of the Blind DKG flow to define restrictions/rules that must be meet to get access to shared secrets, and to provide a proofs that requirements to access a shared secret are satisfied.
+  - **Rules** **DSL:** a domain specific language to define/model access rules required to get access to  a shared secret. Once defined, rules are packaged/translated to zk-SNARKS. In future versions we will build a graphic editor to define these rules using our DSL as building block.
+  - **Storage:** provides types and functions to save/read/update cyphered documents through different datasource options. The first version will provide IPFS as data storage option but we are going to expand this module in the future to include centralized options as well such S3, Google Drive, between others.
+  - **Graphql API:** provides types and functions to fetch data saved on-chain related to Blind DKG in a developer friendly way.
 ### Ecosystem Fit
 
 Help us locate your project in the Polkadot/Substrate/Kusama landscape and what problems it tries to solve by answering each of these questions:
@@ -196,13 +202,28 @@ Please describe the team's relevant experience. If your project involves develop
 
 If anyone on your team has applied for a grant at the Web3 Foundation previously, please list the name of the project and legal entity here.
 
-#### Tony Riemer
+### Tony Riemer
 
 Tony has previously worked on 1.5 web3 foundation grants in the past for the Iris project (link here). 
 
-#### Carlos Montoya
-
-#### Juan Girini
+### Carlos Montoya
+Carlos has been doing software for more than 20 years now, most recently in the startup world. 
+- **Education**
+Carnegie Mellon University
+Master of Science Information Technology, 2011 - 2013
+Tecnológico de Monterrey
+Master in Information Technology Management, 2011 - 2013
+Universidad Pontificia Bolivariana
+Innovation and Technoogy Management, 2009 - 2010
+Universidad Autónoma de Manizales
+Systems Engineer, 1997 - 2002
+- **Blockchain Experience**
+Through 2022 Carlos had the chance to learn a lot about building smart contracts with solidity, and took part of some encode-club bootcamps and ETH Global hackathons. During this period of time he built several apps, one of them a decentralized job-board app and protocol called [web3Jobs] (https://ethglobal.com/showcase/web3jobsfevm-inz64),[web3jobs repo](https://github.com/encode-g2-project). At the same time he started to learn rust and it was when he decided to apply to the second polkadot academy cohort. Carlos was accepted and recently (Early 2023) completed his education as polkadot blockchain engineer with a very good performance, it was a very intense but rewarding experience. During the polkadot academy he was able to build a uniswap V2 Dex pallet, and XCM communication scenario, and some other cool use cases.
+- **Software Engineering Experience**
+  - Between 2004 and 2015, at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm with a deep focus in the energy industry, he was in charge of defining the way of doing great software for the entire company, leading the most skilled people, building the most complex software products and managing hundreds of initiatives for helping the company to expand its operations in Colombia, Dominican Republic, and Mexico. 
+  - Between 2016 and 2020 he was completely focused on building [StellarEmploy](https://www.stellaremploy.com) with his co-founders, where we had the opportunity to take part of NY ERA accelerator, and got institutional Money. StellarEmploy technology was recently acquired by Learning Collider.  
+  - Since early 2021 Carlos has been focused mainly on [TeamClass](https://www.teamclass.com), a b2b marketplace for helping companies with their team-building initiatives through virtual events. We bootstrapped TeamClass ourselves and made sales by 3.8M in our first year.
+### Juan Girini
 
 ### Team Code Repos
 
@@ -249,7 +270,7 @@ If you've already started implementing your project or it is part of a larger re
 The outcome of our milestones is threefold:
 1. Cryptext: A blockchain that uses the protocol above within
 2. A DKG/VSS library
-3. An SDK to build user interfaces, as well as offchain encryption and decryption
+3. An SDK to build user interfaces and client side logic, to define secret sharing access rules, and to perform offchain encryption and decryption.
 
 ### Milestone 1 — Session Validator DKG
 
