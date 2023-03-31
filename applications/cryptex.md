@@ -7,17 +7,18 @@
 ## Project Overview :page_facing_up:
 
 ### Overview
-Alice has a document that she wants to make available to anybody who can meet some set of rules, but Alice will not be available in the future to hand over the document. Since Alice will not be available, she splits her secret data into pieces, or shares, and gives a single piece to anybody who she thinks will be available later and tells each person some condition that someone should prove to get a share. Then, if Bob appears later and can prove that they have met Alice's rules and enough of the people who have shares believe Bob, then they give a copy to Bob and Bob is able to reassamble Alice's document and read her secret.
+
+**Cryptex** is an unstoppable, scalable, and decentralized ‘secret key custodian’ built using *blind DKG*. This proposal introduces the "blind DKG" protocol and elaborates on how it can be used to secure secret key shares using a proof of stake consensus system. The scope of this proposal includes the implementation of blind DKG in a standalone library, new pallets, including one to enable a verifiable secret sharing scheme within the blockchain, and an SDK to interact with Cryptex and handle encryption/decryption along with calls to fetch data from external storage.
+
+Now, suppose Alice has a document that she wants to make available to anybody who can meet some set of rules, but Alice will not be available in the future to hand over the document. Since Alice will not be available, she splits her secret data into pieces, or shares, and gives a single piece to anybody who she thinks will be available later and tells each person some condition that someone should prove to get a share. Then, if Bob appears later and can prove that they have met Alice's rules and enough of the people who have shares believe Bob, then they give a copy to Bob and Bob is able to reassamble Alice's document and read her secret.
 
 This type of sharing is made possible thanks to threshold secret sharing, first introduced by [Shamir](https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf). However, TSS by itself has several issues, namely that it requires a trusted setup, or key generation, phase. So, verifiable secret sharing schemes have been developed to allow for the verification of shares (such as [Feldman's scheme](https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf), which ours closely mirrors). The setup, however, still depends on a trusted party to generate the shares. Thus, a distributed key generation protocol is a protocol to generate shares in a trustless way, with no third party needed. 
 
-In this proposal, we introduce our protocol, blind DKG, where validators are incentivized to participate in a distributed key generation protocol. Our protocol allows for a verifiable secret sharing scheme with an on-chain proof system to gate access to data. Unlike a traditional VSS scheme however, it eliminates the need for a trusted setup by using a distributed key generator, as well as introduces a mechanism for validators to communicate 'blindly'. It allows for a trustless key generation and reencryption (i.e. secret sharing) process. When implemented as part of a decentralized network (such as a blockchain), it enables a system where you can create a distributed secret and derive numerous provably owned (by onchain identity) public keys that can then be used to encrypt data, while the network becomes responsible for reencrypting it. Additionally, we extend the protocol to enable a 'cryptographic gate' to data access, wherein an owner of some data can define rules to delegate decryption rights. 
-
-The mechanism is both non-interactive, in that Alice does not need to interact with Bob in order to delegate decryption rights, and also has no trusted setup. Alice does not need to trust the set of participants holding the pieces of her secret (nor even know their identitites).
+In this proposal, we introduce our protocol, blind DKG, where validators are incentivized to participate in a distributed key generation protocol. Our protocol allows for a verifiable secret sharing scheme with an on-chain proof system to gate access to data. Unlike a traditional VSS scheme however, it eliminates the need for a trusted setup by using a distributed key generator, as well as introduces a mechanism for validators to communicate 'blindly'. It allows for a trustless key generation and reencryption (i.e. secret sharing) process. When implemented as part of a decentralized network (such as a blockchain), it enables a system where you can create a distributed secret and derive numerous provably owned (by onchain identity) public keys that can then be used to encrypt data, while the network becomes responsible for reencrypting it. Additionally, we extend the protocol to enable a 'cryptographic gate' to data access, wherein an owner of some data can define rules to delegate decryption rights. The mechanism is both non-interactive, in that Alice does not need to interact with Bob in order to delegate decryption rights, and also has no trusted setup. Alice does not need to trust the set of participants holding the pieces of her secret (nor even know their identitites).
 
 ### Project Details
 
-Blind DKG is a protocol to enable a decentralized, unstoppable, yet governable secret key custodian. To start, we provide a brief overview of secret sharing and distributed key generation. Then, we will use this to explain the idea for our protocol.
+To start, we provide a brief overview of secret sharing and distributed key generation. Then, we will use this to explain the idea for our protocol. For additional motivation and details, we direct the reader to a [substack](https://ideallabs.substack.com/p/blind-dkg-part-1) we wrote that elaborates on the reason that VSS by itself isn't enough for an unstoppable application.
 
 #### Background: Secret Sharing and Distributed Key Generation
 
@@ -37,24 +38,23 @@ By itself, VSS still requires a 'dealer' to generate the secret polynomial $f$ a
 
 Some solutions, such as the Lit protocol, use a similar mechanism, using a DKG to start a TSS process. Additionally, they perform the computations using keys within a TEE. However, in their protocol, each member of the validator set is a shareholder, and so generating new keys is very expensive. I doubt that the network could scale to handle reencryption hundreds of keys within a small timeframe, whereas our solution is highly scalable.
 
-Distributed key generation, or DKG, allows for shares (which can be used in a threshold encryption scheme), to be generated in a trustless way. Our scheme, inspired by the [ethDKG scheme](https://eprint.iacr.org/2019/985), is composed of three major phases: the sharing phase, the disputes phase, and the key derivation phase. During the sharing phase, a subset of the participants, called the dealer set, selects a random bivariate polynomial and publishes a commitment to the polynomial as well as derives a 'share' for each member of the dealer set (other than itself) and publishes it onchain. After a dealer shares its generated shares with other dealers, the disputes phase begins, in which dealers prepare zero-knowledge proofs of the invalidity of any shares they are claiming as invalid. If a threshold of dealers believe the proof, then the share is marked is disqualified from the rest of the protocol. Finally, in the key derivation phase, a qualified subset of the initial dealer set is determined and a master public key and secret is able to be determined. 
+Distributed key generation, or DKG, allows for shares (which can be used in a threshold encryption scheme), to be generated in a trustless way. Our scheme, inspired by the [ethDKG scheme](https://eprint.iacr.org/2019/985), is composed of three major phases: the sharing phase, the disputes phase, and the key derivation phase. During the sharing phase, a subset of the participants, called the dealer set, randomly selects a polynomial and calculates secret key shares for each member of the dealer set (other than itself). Then it encrypts each share for each member of the dealer set and publishes a commitment to the polynomial and the encrypted share onchain. After a dealer shares its generated shares with other dealers, the disputes phase begins, in which dealers prepare zero-knowledge proofs of the invalidity of any shares they are claiming as invalid. If a threshold of dealers believe the proof, then the share is marked is disqualified from the rest of the protocol. Finally, in the key derivation phase, a qualified subset of the initial dealer set is determined and a master public key and secret is able to be determined. 
 
-Once a master public key is known, it can be used to encrypt some secret. Later, through the VSS scheme, the secret can be made available to another participant by 'reencrypting' the shares used for the master public key used and sharing with the other participant. In our network, we will assume that each address has a public/secret keypair associated with it. Thus, by reencryption, we mean that each shareholder decrypts their share, then encrypts it again using some public key (e.g. the pubkey of the address who should receive shares) and publishing it.
+Once a master public key is known, it can be used to encrypt some secret. Later, through the VSS scheme, the secret can be made available to another participant by 'reencrypting' the shares used for the master public key used and sharing with the other participant. In our network, we will assume that each address has a public/secret keypair associated with it. Thus, by reencryption, we mean that each shareholder decrypts their share, then encrypts it again using some public key (e.g. the pubkey of the address who should receive shares) and publishes it.
 
 #### Our Proposal
 
 Though a DKG scheme might solve the problem of securely generating the keys, it still does not allow for a 'fully decentralizable' protocol. First is the issue of choosing which participants in the network are selected to act as dealers. If this set is centralized or static, then the network is more centralized, and potentially less secure. Secondly, assuming that through some mechanism that the set of participants in the DKG are randomly distributed among the available candidates, how can we be sure that the selected participants will be willing to participate in the DKG to begin with? Or if they do, how can we be sure that our secret can be reencrypted later? EthDKG solved this with smart contracts, but contracts provide limited capabilities.
 
-We propose consensus-backed DKG protocol for blockchains. We envision that such a protocol can enable a truly decentralized and unstoppable secret key custodian. Our initial phase enables a DKG process where participation is incentivized by rewards provided by the network, and shares are secured by the stake of each participant in the DKG protocol. The mechanisms allows for the formation of 'societies' whose members, each a validator, participated in the DKG process together. Subsequently, a 'society' can be represented by an onchain asset class, owned by some participant of the network who requested that the secret key be created. By itself, the asset class simply points to ownership/leadership of the society. However, by minting a token, we enable a process by which a new distributed public key can be generated by the society and encoded in an onchain asset class. These public keys can then be used to encrypt data. The encrypted data can then be uploaded to some external storage (e.g. IPFS), and it's location can be encoded onchain. 
+We propose consensus-backed blind DKG protocol, where it is blind in the sense that participants identities are unknown prior to participation. It enables a DKG process where participation is incentivized by rewards provided by the network, and shares are secured by the stake of each participant in the DKG protocol. The mechanisms allows for the formation of 'societies' whose members, each a validator, participated in the DKG process together. 
 
-Now, we propose an extension to the DKG/VSS mechanism above. In our new construction, we allow the owner of a society to prepare a ZK SNARK to encode a statement in the blockchain's state, for example, using R1CS to encode a requirement for ownership of some specific NFT, or having a minimum balance, etc. This is a publicly verifiable SNARK. Along with the (multi)location if the ciphertext, the encryptor also shares the common reference string (CRS) and the relation used (i.e. the condition in the blockchain's state) to generate the CRS. This is then associated with the public key that encrypted it. For example, a mapping like: $PK \to (R, \sigma, /ip4/.../QmX99dAd...)$. It should be publicly verifiable that an owner 'owns' the public key, but there is no direct mapping between the public key and the society. However, the members of the society are still able to determine if the public key belongs to them.
+[ok redo this whole idea.. it really sounds half baked imo] Subsequently, a 'society' can be represented by an onchain asset class, owned by some participant of the network who requested that the secret key be created. By itself, the asset class simply points to ownership/leadership of the society. However, by minting a token, we enable a process by which a new distributed public key can be generated by the society and encoded in an onchain asset class. These public keys can then be used to encrypt data. The encrypted data can then be uploaded to some external storage (e.g. IPFS), and it's location can be encoded onchain. 
 
-When a third party, say Bob, wants to get access to some ciphertext, he prepares a merkle proof of his state that he claims meets the conditions defined by Alice. Then, he prepares a zk proof claiming that his Merkle proof satisfies Alice's condition. If a threshold of shareholders can verify this proof, they each reencrypt a share for Bob. After a threhsold are reencrypted, Bob can recover the secret.
+Finally, the last leg of our proposal concerns data accessibility. That is, we propose a mechanism that allows the owner a public key to control how data encrypted with that key can be created. We have several potential options in mind that we would like to explore further, and as yet we do not feel comfortable commiting to one or the other. So, we will present the options that we are considering below, and we will ammend this proposal once the decision is made.
 
 ##### What this is not
-- As this is a 'KEM', key encapsulation mechanism, there are a few implications:
-  - This protocol does not encrypt or decrypt data for you, only keys. Data encryption and decryption must still be handled outside of the main protocol, though we scope out a user interface that demonstrates how handle that in the browser.
-  - This protocol is not a decentralized storage solution. The management and storage of data that is encrypted with keys generated this way must still be handled offchain.
+- This protocol does not encrypt or decrypt data for you, only keys. Data encryption and decryption must still be handled outside of the main protocol, though we scope out a user interface that demonstrates how handle that in the browser.
+- This protocol is not a decentralized storage solution. The management and storage of data that is encrypted with keys generated this way must still be handled offchain. This protocol will attempt to be storage agnostic.
 
 ### Blind DKG Protocol
 
@@ -80,7 +80,6 @@ In the first phase of the protocol, a fixed amount of *session validators* are s
 The values for the size of the session validator set, $n$ and the thresold $t$ are a function of the total size of the network. That is, if there are more keys that need to be held and reencrypted, then the number of session validators should be increased in order to process each. However, this poses an issue in regards to scalability. It implies that the validator set will need to continuously grow in order to facilitate more 'reencryption bandwidth', unless we limit the bandwidth to some certain number of keys generated or reencrypted per block. We do not yet have a solution for this, but will actively research potential approaches.
 
 #### Ad-Hoc DKG and Secret Societies
-note to self:[info on vrfs](https://wiki.polkadot.network/docs/learn-randomness)
 
 Now that the session validators have provided a session public key, we can instantiate ad-hoc *blindly* dkg using other members of the validator set. During each session, a participant can issue a 'request' to start the DKG by proving a number of shares and a threshold, $(t, n)$. Then, 'secret societies' can be formed, wherein each member has a secret key share. The protocol (for a single request) is as follow:
 
@@ -123,7 +122,14 @@ The disputes phase for secret societies is quite a bit different than for sessio
 
 #### Encryption
 
-Encryption is accomplished by using some type of public key encryption (e.g. ed25519), using the public key as derived above. Subsequently, the resulting ciphertext is added to some storage system and a multiaddress is published onchain. 
+Encryption is accomplished by using some type of public key encryption (over the same curve used by the blind dkg protocol) using the public key as derived above. Subsequently, the resulting ciphertext is added to some storage system and a multiaddress is published onchain.
+
+
+#### Session Changes/New Sessions
+
+TODO
+
+For the time being, we will assume that the input and output of the blind dkg must happen within a single session. In the future, we will resolve this issue. 
 
 #### Secret Sharing
 
@@ -133,49 +139,103 @@ So, to enable secret sharing with a secret society, we create a struct, similar 
 
 Finally, the recipient of the shares can verify each share, rejecting invalid ones, and only rewarding participants who provided a valid share. At this point, the identities of the society are revealed. We will explore 'member rotation' in the future, however, for now we will just assume this is acceptable.
 
-#### Session Changes/New Sessions
+#### Data Access/Decryption Rights Delegation
 
-TODO
+In this section, we explore several potential ideas that we can implement in order to let the owner of a public key define how access to that public key is defined in terms of the blockchain's state. 
 
-#### ZK Gating for Data
+##### Option 1
+Now, we propose an extension to the DKG/VSS mechanism above. In our new construction, we allow the owner of a society to prepare a ZK SNARK to encode a statement in the blockchain's state, for example, using R1CS to encode a requirement for ownership of some specific NFT, or having a minimum balance, etc. This is a publicly verifiable SNARK. Along with the (multi)location if the ciphertext, the encryptor also shares the common reference string (CRS) and the relation used (i.e. the condition in the blockchain's state) to generate the CRS. This is then associated with the public key that encrypted it. For example, a mapping like: $PK \to (R, \sigma, /ip4/.../QmX99dAd...)$. It should be publicly verifiable that an owner 'owns' the public key, but there is no direct mapping between the public key and the society. However, the members of the society are still able to determine if the public key belongs to them.
 
+When a third party, say Bob, wants to get access to some ciphertext, he prepares a merkle proof of his state that he claims meets the conditions defined by Alice. Then, he prepares a zk proof claiming that his Merkle proof satisfies Alice's condition. If a threshold of shareholders can verify this proof, they each reencrypt a share for Bob. After a threhsold are reencrypted, Bob can recover the secret.
+
+TODO.
 Using arkworks r1cs, we can construct a zk SNARK based on a state in a Merkle tree. 
+
+##### Option 2
+Using Smart contracts, a similar way as was done in Iris. When you create a pubkey, you also provide an address. When a caller requests reencryption, you first check that the given address has authorized it, and then you can provide a share. This option is probably a lot easier than option 1. But, it's not privacy preserving at all.
+
 
 #### Proposed Architecture
 
-- We intend to use a modified version of Babe for block authorship
-  - do we need to modify it or not? I think we will, but I'm not really sure yet...
-- We will use Grandpa for block finalization
-- We will build a DKG pallet. The DKG pallet:
-  - stores and manages a queue to issue DKG requests
-  - 
-- We will build a SDK with the following capabilities to allow developers and protocols to interact with cryptex:
+##### Libraries/Tech Stack
+
+- Languages: rust, typescript/javascript
+- Frameworks/Libs: substrate + tools (e.g. zombienet, telemetry), arkworks-rs,
+- We will use [tarpaulin](https://github.com/xd009642/tarpaulin) for test coverage of our new pallets and node.
+
+##### Blind DKG Library
+
+This is a standalone library that contains the code for the main blind dkg protocol. We plan on building this using arkworks-rs unless we find a better alternative. This library will enable the Blind DKG protocol as detailed above. In essence, it will provide functionality to:
+
+- generate secret shares, commitments
+- verify key shares and prepare proofs of correctness of invalidity
+- encrypt and decrypt key shares using the curve used by the dkg 
+- encrypt plaintext using a public key on the curve used by the dkg
+- decrypt ciphertext using a secret key on the curve
+
+##### Pallets
+
+At a *really* high level, our runtime will use the following pallets at a bare minimum (we will use other 'standard' pallets too, e.g. timestamp, tx fees, etc.)
+
+![high-level-pallets](../static/img/high_level_pallets.png)
+
+###### DKG  Pallet
+
+The DKG pallet will:
+- request dkg, manage request queue
+- submit encrypted shares, commitments to polynomials (i.e. interact with blind dkg library)
+- manage zk verification
+- track participation/rewards
+
+###### 
+
+###### Other Pallets
+
+We need to explore the best way to represent the 'secret society' onchain in a way that doesn't expose their identities. 
+I think an interesting idea to explore is to use a DID, decentralized identifier, where the 'identity' that's owned is a public key derived from some society. We will most likely not use curve25519 in our VSS scheme, since it isn't a field of prime order (so we don't have the same security guarantees). We will probably use BLS12-381. Now, let's say we consider that as a DID that can be owned by a substrate address, say whichever node paid to have the blind dkg run. In a DID  scheme, the owner of the DID can use its ownership to perform certain tasks. For us, we want the DID to track parties that are authorized to get a reencryption key. So basically in a really simplistic way, we could do something like:
+
+have a contract deployed, a rule executor done the same way as in Iris. Then, when deriving a public key you also give each shareholder the address of the rule executor. When some address calls the executor, it should call into the chain (via a chain extension) to temporarily give the caller the rights to get a decryption key. So basically, in the "DID" way, by owning the DID or by being a temorary 'delegate', it authorizes the society to give you a share. 
+
+##### SDK
+We will build a SDK with the following capabilities to allow developers and protocols to interact with cryptex:
   - **Encryption:** provides types and functions to encrypt and decrypt secrets. 
   - **VSS Client:** provides types and functions to interact with the protocol, some examples of such interactions are encryption key requests and secret sharing requests.
   - **ZK:** provides types and functions to define zk-SNARKS and Zero-knowledge proofs. They are required as part of the Blind DKG flow to define restrictions/rules that must be meet to get access to shared secrets, and to provide a proofs that requirements to access a shared secret are satisfied.
   - **Rules** **DSL:** a domain specific language to define/model access rules required to get access to  a shared secret. Once defined, rules are packaged/translated to zk-SNARKS. In future versions we will build a graphic editor to define these rules using our DSL as building block.
   - **Storage:** provides types and functions to save/read/update cyphered documents through different datasource options. The first version will provide IPFS as data storage option but we are going to expand this module in the future to include centralized options as well such S3, Google Drive, between others.
   - **Graphql API:** provides types and functions to fetch data saved on-chain related to Blind DKG in a developer friendly way.
+
 ### Ecosystem Fit
 
 Help us locate your project in the Polkadot/Substrate/Kusama landscape and what problems it tries to solve by answering each of these questions:
 
 - Where and how does your project fit into the ecosystem?
+  - Our project is a substrate-based chain that introduces new capabilities to the ecosystem.
+  - Our work will produce tools and knowledge that will be open source and openly available to the developer community.
+  - We aim to become a parachain.
 - Who is your target audience (parachain/dapp/wallet/UI developers, designers, your own user base, some dapp's userbase, yourself)?
+  - **parachain**: ultimately, we strive to become a parachain. By taking advantage of XCM and continuing to evolve the cryptographic mechanisms surrounding delegation of decryption, we believe that very powerful and dynamic paradigms can be unleashed, such as gating access to data based on conditions of any state in any other parachain (e.g. data access via ownership of some specific asset on Statemint).
+  - **users**: A long-term target audience will be our own user-base, as well as the user base of other parachains who need to share a secret. 
+  - **Developers**: The tools we develop will be open source and available to other developers in the ecosystem. We intend to build a robust toolkit to enable devs to easily build on our new protocol/blockchain.
 - What need(s) does your project meet?
+  - Our project enables a decentralized an unstoppable secret key custodian. We see this as a foundational layer to building decentralized 'cryptographic data ownership' models, where by having a trustless key custodian, the network allows you to provably 'own' data, by proving that you own the keys to decrypt it.
+  - On top of that, the project also allows for a certain degree of governance within the system, and we have plans to add some type of 'decentralized moderation' tools in the future. 
 - Are there any other projects similar to yours in the Substrate / Polkadot / Kusama ecosystem?
+  - There are some projects that use threshold encryption:
+    - [CESS](https://cess.cloud/)
+    - [SkyeKiwi](https://github.com/skyekiwi/skyekiwi-protocol)
+    - However, neither project uses a dkg for trustless keygen as we do. Further, SkyeKiwi is dependent on IPFS, which our protocol is not. We see our protocol as being more highyl scalable and secure. 
   - If so, how is your project different?
   - If not, are there similar projects in related ecosystems?
----
-- Cryptex/Blind DKG provides new secret sharing capabilities to the ecosystem.
-- It stores their secrets in a decentralized way, and have them available to them when they need them, without having to trust a third party.
-- There are no similar projects in the Substrate / Polkadot / Kusama ecosystem. We have found though that there are projects that are somehow similar in other ecosystems:
-  - [b.lock](https://github.com/BlockProject/b-lock)
-  - [DaPassword](https://cardano.ideascale.com/c/idea/332494)
-  - [Blockchain password](https://margatroid.github.io/blockchain-password/#/)
-  - [You](https://medium.com/airgap-it/you-the-decentralized-password-manager-2f521cced7be)
+- We have found projects that are similar in other ecosystems as well:
+  - For general "password manager/storage" type applications, we have:
+    - [b.lock](https://github.com/BlockProject/b-lock)
+    - [DaPassword](https://cardano.ideascale.com/c/idea/332494)
+    - [Blockchain password](https://margatroid.github.io/blockchain-password/#/)
+    - [You](https://medium.com/airgap-it/you-the-decentralized-password-manager-2f521cced7be)
+  - [EthDKG](https://github.com/PhilippSchindler/EthDKG): Our protocol uses the same DKG scheme as ethDKG, though we use a different SNARK system and have several other distinctions (e.g. consensus-backed security for secret shares).
+  - [Share](https://share.formless.xyz/): which appears to use some type of threshold encryption but does not go into major detail (and which has dubious scalability)
   - [Lit Protocol](https://litprotocol.com/): We share many similarities with this protocol as it is built on the same underlying technology, using DKG and TSS. However, lit only enables on layer of TSS, similar to our 'session public key'. Additionally, it does not use zk SNARKs or other privacy preserving tools. I believe that Lit would not scale well, whereas this protocol does. 
-  - [Share](https://share.formless.xyz/)
 
 ## Team :busts_in_silhouette:
 
@@ -204,31 +264,33 @@ If anyone on your team has applied for a grant at the Web3 Foundation previously
 
 ### Tony Riemer
 
-I studied mathematics at the University of Wisconsin and subsequently went to work at Fannie Mae (Federal National Mortgage Association) and Capital One, where I was the lead engineer on a project to build automated experiences for customers. I've been working exclusively in the web3 space for a year and a half now, including on two w3f grants. 
+I am an engineer and (aspiring) mathematician with a passion for exploring new ideas. I studied mathematics at the University of Wisconsin and subsequently went to work at Fannie Mae (Federal National Mortgage Association) and Capital One as a full stack engineer where I mainly worked on fintech products (e.g. systems for loan servicing and pricing algorithms). For the previous year and a half, I've been working exclusively in the web3 space, including having worked on two web3 foundation grants [here]() and [here](). Beyond that, I have dabbled in many open source projects as well as have built my own, ranging from computer vision, machine learning, to blockchains and IoT communications.  Most recently, I attended the Polkadot Blockchain Academy in Buenos Aires, and this new proposal is an application of ideas I learned there applied to my previous grant. 
 
 ### Carlos Montoya
 Carlos has been doing software for more than 20 years now, most recently in the startup world. 
 - **Education**
-Carnegie Mellon University
-Master of Science Information Technology, 2011 - 2013
-Tecnológico de Monterrey
-Master in Information Technology Management, 2011 - 2013
-Universidad Pontificia Bolivariana
-Innovation and Technoogy Management, 2009 - 2010
-Universidad Autónoma de Manizales
-Systems Engineer, 1997 - 2002
+  - Carnegie Mellon University
+    Master of Science Information Technology, 2011 - 2013
+  - Tecnológico de Monterrey
+    Master in Information Technology Management, 2011 - 2013
+  - Universidad Pontificia Bolivariana
+    Innovation and Technoogy Management, 2009 - 2010
+  - Universidad Autónoma de Manizales
+    Systems Engineer, 1997 - 2002
 - **Blockchain Experience**
 Through 2022 Carlos had the chance to learn a lot about building smart contracts with solidity, and took part of some encode-club bootcamps and ETH Global hackathons. During this period of time he built several apps, one of them a decentralized job-board app and protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). At the same time he started to learn rust and recently took part of the polkadot academy in Buenos Aires with very good performance. During the polkadot academy he was able to build a uniswap V2 Dex pallet, and XCM communication scenario, and some other cool use cases.
 - **Software Engineering Experience**
   - Between 2004 and 2015, at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm with a deep focus in the energy industry, he was in charge of defining the way of doing great software for the entire company, leading the most skilled people, building the most complex software products and managing hundreds of initiatives for helping the company to expand its operations in Colombia, Dominican Republic, and Mexico. 
   - Between 2016 and 2020 he was completely focused on building [StellarEmploy](https://www.stellaremploy.com) with his co-founders, where we had the opportunity to take part of NY ERA accelerator, and got institutional Money. StellarEmploy technology was recently acquired by Learning Collider.  
   - Since early 2021 Carlos has been focused mainly on [TeamClass](https://www.teamclass.com), a b2b marketplace for helping companies with their team-building initiatives through virtual events. We bootstrapped TeamClass ourselves and made sales by 3.8M in our first year.
+
+
 ### Juan Girini
 
 ### Team Code Repos
 
-- https://github.com/<your_organisation>/<project_1>
-- https://github.com/<your_organisation>/<project_2>
+- https://github.com/ideal_lab5/cryptex
+- https://github.com/ideal_lab5/blind-dkg
 
 Please also provide the GitHub accounts of all team members. If they contain no activity, references to projects hosted elsewhere or live are also fine.
 
@@ -301,6 +363,8 @@ Goals:
 - **Estimated Duration:** 5 weeks
 - **FTE:**  2.5
 - **Costs:** 8,000 USD
+
+Overview: At the end of this milestone, we will have a functional decentralized 'secret recovery' network, wherein an address can initiate the dkg, own a derived public key, encrypt data with it, request a reencryption key, and use that to decrypt the data.
 
 Goals:
 - Ability to perform ad-hoc DKG and derive a public key
