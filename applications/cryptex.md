@@ -9,15 +9,15 @@
 ### Overview
 Alice has a document that she wants to make available to anybody who can meet some set of rules, but Alice will not be available in the future to hand over the document. Since Alice will not be available, she splits her secret data into pieces, or shares, and gives a single piece to anybody who she thinks will be available later and tells each person some condition that someone should prove to get a share. Then, if Bob appears later and can prove that they have met Alice's rules and enough of the people who have shares believe Bob, then they give a copy to Bob and Bob is able to reassamble Alice's document and read her secret.
 
-This type of sharing is made possible thanks to threshold secret sharing, first introduced by [Shamir](https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf). However, TSS by itself has several issues, and so verifiable secret sharing schemes have been developed to allow for the verification of shares (such as [Feldman's scheme](https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf), which ours closely mirrors). The setup, however, still depends on a trusted party to generate the shares. Thus, a distributed key generation protocol is a protocol to generate shares in a trustless way, with no third party needed. 
+This type of sharing is made possible thanks to threshold secret sharing, first introduced by [Shamir](https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf). However, TSS by itself has several issues, namely that it requires a trusted setup, or key generation, phase. So, verifiable secret sharing schemes have been developed to allow for the verification of shares (such as [Feldman's scheme](https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf), which ours closely mirrors). The setup, however, still depends on a trusted party to generate the shares. Thus, a distributed key generation protocol is a protocol to generate shares in a trustless way, with no third party needed. 
 
-In this proposal, we introduce our protocol, blind DKG, where validators are incentivized to participate in a distributed key generation protocol. In essence, our proposal is similar to a threshold proxy reencryption protocol, however, it eliminates the need for a trusted proxy by using a distributed key generator, as well as introduces a mechanism for validators to communicate 'blindly'. It allows for a trustless key generation and reencryption (i.e. secret sharing) process. When implemented as part of a decentralized network (such as a blockchain), it enables a system where you can create a distributed secret and derive numerous provably owned (by onchain identity) public keys that can then be used to encrypt data, while the network becomes responsible for reencrypting it. Additionally, we extend the protocol to enable a 'cryptographic gate' to data access, wherein an owner of some data can define rules to delegate decryption rights. 
+In this proposal, we introduce our protocol, blind DKG, where validators are incentivized to participate in a distributed key generation protocol. Our protocol allows for a verifiable secret sharing scheme with an on-chain proof system to gate access to data. Unlike a traditional VSS scheme however, it eliminates the need for a trusted setup by using a distributed key generator, as well as introduces a mechanism for validators to communicate 'blindly'. It allows for a trustless key generation and reencryption (i.e. secret sharing) process. When implemented as part of a decentralized network (such as a blockchain), it enables a system where you can create a distributed secret and derive numerous provably owned (by onchain identity) public keys that can then be used to encrypt data, while the network becomes responsible for reencrypting it. Additionally, we extend the protocol to enable a 'cryptographic gate' to data access, wherein an owner of some data can define rules to delegate decryption rights. 
 
 The mechanism is both non-interactive, in that Alice does not need to interact with Bob in order to delegate decryption rights, and also has no trusted setup. Alice does not need to trust the set of participants holding the pieces of her secret (nor even know their identitites).
 
 ### Project Details
 
-Blind DKG is a protocol to enable a decentralized, unstoppable, yet governable secret key custodian. To start, we provide a brief overview of secret sharing and distributed key generation. Then, we will this to explain the idea for our protocol.
+Blind DKG is a protocol to enable a decentralized, unstoppable, yet governable secret key custodian. To start, we provide a brief overview of secret sharing and distributed key generation. Then, we will use this to explain the idea for our protocol.
 
 #### Background: Secret Sharing and Distributed Key Generation
 
@@ -60,7 +60,7 @@ When a third party, say Bob, wants to get access to some ciphertext, he prepares
 
 To begin, our protocol has two main DKG algorithms. The first is among a publicly known validator set, and the second is among a 'blind' validator set.
 
-#### Session Validators and  Session Public Key Derivation
+#### Session Validators and Session Public Key Derivation
 
 In the first phase of the protocol, a fixed amount of *session validators* are selected. In fact, we will be contstructing a (t, n)-VSS scheme among the session validator set. This idea has been used in [HoneyBadgerBFT](https://eprint.iacr.org/2016/199.pdf) previously, so we may want to explore atomic broadcast in the future. The idea is that this set of validators can reencrypt data for other validators later on without the validators knowing each others identities. This forms the basis for the 'blindness' of our ultimate keygen construction, and also ensure that we are given a unique, randomly sampled session public key for each session. At the end of each session, rewards will be calcualted and distributed based on session validators' stake and performance during the session. The values for $\tau$ and $\epsilon$ are TBD. but will be well known among all validators.
 
@@ -123,7 +123,7 @@ The disputes phase for secret societies is quite a bit different than for sessio
 
 #### Encryption
 
-Encryption is accomplished by using asymmetric encryption (e.g. ECDH), using the public key as derived above. Subsequently, the resulting ciphertext is added to some storage system and a multiaddress is published onchain. 
+Encryption is accomplished by using some type of public key encryption (e.g. ed25519), using the public key as derived above. Subsequently, the resulting ciphertext is added to some storage system and a multiaddress is published onchain. 
 
 #### Secret Sharing
 
@@ -133,13 +133,13 @@ So, to enable secret sharing with a secret society, we create a struct, similar 
 
 Finally, the recipient of the shares can verify each share, rejecting invalid ones, and only rewarding participants who provided a valid share. At this point, the identities of the society are revealed. We will explore 'member rotation' in the future, however, for now we will just assume this is acceptable.
 
-#### ZK Gating for Data
-
-TODO
-
 #### Session Changes/New Sessions
 
 TODO
+
+#### ZK Gating for Data
+
+Using arkworks r1cs, we can construct a zk SNARK based on a state in a Merkle tree. 
 
 #### Proposed Architecture
 
@@ -193,8 +193,8 @@ Help us locate your project in the Polkadot/Substrate/Kusama landscape and what 
 
 ### Legal Structure
 
-- **Registered Address:** Address of your registered legal entity, if available. Please keep it in a single line. (e.g. High Street 1, London LK1 234, UK)
-- **Registered Legal Entity:** Name of your registered legal entity, if available. (e.g. Duo Ltd.)
+- **Registered Address:** 2451 Crystal Drive, 6th floor, Arlington, VA 22202, USA
+- **Registered Legal Entity:** Ideal Labs, LLC
 
 ### Team's experience
 
@@ -204,7 +204,7 @@ If anyone on your team has applied for a grant at the Web3 Foundation previously
 
 ### Tony Riemer
 
-Tony has previously worked on 1.5 web3 foundation grants in the past for the Iris project (link here). 
+I studied mathematics at the University of Wisconsin and subsequently went to work at Fannie Mae (Federal National Mortgage Association) and Capital One, where I was the lead engineer on a project to build automated experiences for customers. I've been working exclusively in the web3 space for a year and a half now, including on two w3f grants. 
 
 ### Carlos Montoya
 Carlos has been doing software for more than 20 years now, most recently in the startup world. 
@@ -263,7 +263,7 @@ If you've already started implementing your project or it is part of a larger re
 
 ### Overview
 
-- **Total Estimated Duration:** 5 months
+- **Total Estimated Duration:** 16 weeks
 - **Full-Time Equivalent (FTE):**  2.5 FTE
 - **Total Costs:** 49,999 USD
 
@@ -274,13 +274,16 @@ The outcome of our milestones is threefold:
 
 ### Milestone 1 — Session Validator DKG
 
-- **Estimated duration:** 1.5 month
+- **Estimated duration:** 5 weeks
 - **FTE:**  2.5
 - **Costs:** 10,000 USD
 
-The first milestone introduces a new pallet to submit DKG requests to, we also implement the session validator DKG to create a session public key. We plan on implementing our DKG using the arkworks-algebra crates over curve25519. As such, the resulting session public key can be used in the same way as keypairs used as AccountIds in substrate. As such, owning a derived public key is kind of like owning an account.
-
-In this milestone we will make changes to both FRAME, primitives, and client.
+Goals:
+- TSS Library development and testing
+- Basic session validator set creation and session public key derivation
+- Beginnings of SDK: encryption, decryption, IPFS interactions
+-- 
+- we omit the disputes phase until milestone 3
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
@@ -289,26 +292,77 @@ In this milestone we will make changes to both FRAME, primitives, and client.
 | **0c.** | Testing and Testing Guide | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. |
 | **0d.** | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
 | 0e. | Article | We will publish an **article**/workshop that explains [...] (what was done/achieved as part of the grant). (Content, language and medium should reflect your target audience described above.) |
-| 1. | Library: DKG | We implement and test a DKG protocol implemented with arkworks. This inital version will follow the same approach as ethDKG. The first version of the protocol will have abilities to generate a key/poly, commit to it, and to encrypt it. |
-| 2. | Substrate module: DKG Pallet | The DKG pallet will contain an extrinsic to create DKG requests. It will also contain the basis for representing societies onchain. That is, this pallet will also store a 'society' and and assets (public keys) minted from it. |
-| 3. | SDK | We implement a simple SDK and a simple UI that uses it. The SDK will allow nodes to stake/unstake tokens as well as view session validators. They should be able to view their total rewards they've earned by participating in a session as well. |
+| 1. | Library: DKG | We implement and test a DKG protocol implemented with arkworks (unless we find a better solution). The first version of the protocol will have abilities to generate a key/poly, commit to it, to encrypt secret shares (for transmission) and to decrypt them (the combination of these two enables reencryption). This will be the main library we integrate into our runtime to enable the dkg. We will experiment with a few potential curves, specifically BLS12-381 and BLS12-377 (among others). There is some learning that will be needed as part of this. |
+| 2. | Substrate module: DKG Pallet | We build a pallet to enable the system mentioned [here](#session-validators-and-session-public-key-derivation) minus the disputes phase. Under the hood, we will use Babe and Grandpa for authorship and finalization, and this pallet will be based on the [staking pallet](https://github.com/paritytech/substrate/blob/master/frame/staking/README.md). We will use the same VRF that is used by BABE. |
+| 3. | SDK | Setup encryption and decryption capabilities, setup capabilities to interact with IPFS to add/read data. |
 
 ### Milestone 2 — Ad-Hoc DKG/Secret Societies
 
-- **Estimated Duration:** 1 month
-- **FTE:**  2,5
+- **Estimated Duration:** 5 weeks
+- **FTE:**  2.5
 - **Costs:** 8,000 USD
 
+Goals:
+- Ability to perform ad-hoc DKG and derive a public key
+  - Use session public key to securely transmit shares
+- Ability to use public key to encrypt data
+- Ability to decrypt data by getting a decryption key from the society
+- At the end of this milestone, we should have basic (though not very secure) functionality to generate a new public key using the dkg, encrypt data with it, then get a reencryption key from the network and decrypt the data.
+--
+- no disputes phase (milestone 3)
+- no secret sharing
+
+| Number | Deliverable | Specification |
+| -----: | ----------- | ------------- |
+| **0a.** | License | Apache 2.0 / GPLv3 / MIT / Unlicense |
+| **0b.** | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
+| **0c.** | Testing and Testing Guide | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. |
+| **0d.** | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
+| 0e. | Article | We will publish an **article**/workshop that explains [...] (what was done/achieved as part of the grant). (Content, language and medium should reflect your target audience described above.) |
+| 1. | Library: DKG | We make any changes as needed. There should be none, but you never know with these things. |
+| 2. | Substrate module: DKG Pallet - ad-hoc dkg | We extend the functionality of the DKG pallet to submit requests to start the [ad-hoc dkg](#ad-hoc-dkg-and-secret-societies) process and to enable a 'bidding' phase where validators can calculate a VRF output and participate in the DKG as above. The derived public key will be encoded on chain. |
+| 3. | Substrate module: DKG Pallet - share transmission | We implement an encryption mechanism so that validators can encrypt shares using the session public key. Further, we add functionality wherein validators are incentivized to reencrypt these shares correctly when asked (this enables the transmission of the share). Finally, we add functionality so that the receiving validator is able to decrypt the share. |
+| 4. | SDK | We integrate with the blockchain and enable users to initiate the dkg process by submitting a threshold and shares value to the dkg pallet. Users should be able to view their public keys created via the dkg, as well as be able to encrypt data with those public keys and to request decryption keys from the network. |
 
 ### Milestone 3 - zkSNARKs and Disputes Phase
 - **Estimated Duration:** 1 month
-- **FTE:**  2,5
+- **FTE:**  2.5
 - **Costs:** 8,000 USD
 
-### Milestone 4 - Slashing, Rewarding, 
+Goals:
+- implement the disputes phase for session validators and societies
+- use zk SNARKs to encode the proof of correctness of disputed shares
+- implement economic incentives to participate honestly in DKG (slashing + rewarding)
+
+| Number | Deliverable | Specification |
+| -----: | ----------- | ------------- |
+| **0a.** | License | Apache 2.0 / GPLv3 / MIT / Unlicense |
+| **0b.** | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
+| **0c.** | Testing and Testing Guide | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. |
+| **0d.** | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
+| 0e. | Article | We will publish an **article**/workshop that explains [...] (what was done/achieved as part of the grant). (Content, language and medium should reflect your target audience described above.) |
+| 1. | Library: DKG | We implement functionality to verify/unverify secret key shares. Additionally, we will use [groth16](https://github.com/arkworks-rs/groth16) to prepare a zero knowlede proof when a share is calculated as invalid. |
+| 2. | Substrate module: DKG Pallet: Session Validator Disputes Phase | We implement the disputes phase as detailed [here](#disputes-phase). We integrate the changes made as part of (1) in order to verify shares and construct proofs of their invalidity that can be shared with the network. We also implement the verification of these proofs. We do this using the arkworks [r1cs library](https://github.com/arkworks-rs/r1cs-std). |
+| 3. | Substrate module: DKG Pallet: Secret Society Disputes Phase | We implement the disputes phase for societies as detailed [here](#disputes-phase-for-secret-societies). |
+| 4. | SDK | General enhancements, will need to add more features, make it prettier, idk really.  |
+
+### Milestone 4 - Decryption Delegation
 - **Estimated Duration:** 1 month
-- **FTE:**  2,5
+- **FTE:**  2.5
 - **Costs:** 8,000 USD
+
+Goals:
+- enable a rule based system to determine if an address can decrypt data
+
+
+| Number | Deliverable | Specification |
+| -----: | ----------- | ------------- |
+| **0a.** | License | Apache 2.0 / GPLv3 / MIT / Unlicense |
+| **0b.** | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
+| **0c.** | Testing and Testing Guide | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. |
+| **0d.** | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
+| 0e. | Article | We will publish an **article**/workshop that explains [...] (what was done/achieved as part of the grant). (Content, language and medium should reflect your target audience described above.) |
+| 1. | TODO | TODO |
 
 ...
 
