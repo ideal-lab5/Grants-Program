@@ -6,9 +6,9 @@
 
 ## Project Overview :page_facing_up:
 
-### Overview
+**Cryptex** is a blockchain that uses the *blind DKG* protocol. This proposal presents the blind DKG protocol and a potential architecture to implement it within a substrate based blockchain. First, we will briefly explain the cryptographic tools and language needed, then we define the main protocol, and finally we propose a potential architecture for an integration of the protocol into a substrate based runtime.
 
-**Cryptex** is a blockchain that uses the *blind DKG* protocol. This proposal presents the blind DKG protocol and a potential architecture to implement it within a substrate based blockchain. First, we will briefly explain the tools/language needed, then we define the main protocol, and finally we propose a potential architecture for an integration of the protocol.
+### Overview
 
 Now, suppose Alice has a document that she wants to make available to anybody who can meet some set of rules, but Alice will not be available in the future to hand over the document. Since Alice will not be available, she splits her secret data into pieces, or shares, and gives a single piece to anybody who she thinks will be available later and tells each person some condition that someone should prove to get a share. Then, if Bob appears later and can prove that they have met Alice's rules and enough of the people who have shares believe Bob, then they give a copy to Bob and Bob is able to reassamble Alice's document and read her secret.
 
@@ -123,8 +123,6 @@ Our encryption scheme closely resembles the [El Gamal](https://caislab.kaist.ac.
 
 #### Session Changes/New Sessions
 
-TODO
-
 For the time being, we will assume that the input and output of the blind dkg must happen within a single session. In the future, we will resolve this issue. 
 
 #### Secret Sharing
@@ -196,6 +194,15 @@ We will build an SDK with the following capabilities to allow developers and pro
     - This is the thing we need to discuss. For now, it might be easier to just use contracts. 
   - **Storage:** provides types and functions to save/read/update ciphered documents through different datasource options. The first version will provide IPFS as data storage option but we are going to expand this module in the future to include centralized options as well such S3, Google Drive, between others. We will use a `MultiAddress` to locate data and a `CID` to identify it.
   - **Graphql API:** provides types and functions to fetch data saved on-chain related to Blind DKG in a developer friendly way. We may also explore the usage of [subquery](https://subquery.network/). This may not be in scope of the current grant.
+
+From a user-centric perspective, the basic vision for the architecture needed to build a dapp on cryptex might look something like this.
+
+<p align="center">
+ <img src="../static/img/high_level_cryptex_user_centered.drawio.png" alt="SDK interactions overview"/>
+</p>
+
+Dapps built on the protocol would essentially be 'multiaddress and CID management' contracts which would be responsible for storage and curation of the multiaddresses and CIDs that are encrypted with some given public key. For example, a 'Netflix' dapp might look like some type of decentralized database mapping CIDs to some set of metadata (e.g. title, genre, rating), where the CIDs point to data encrypted with the Netflix's public key generated via the DKG. The 'Netflix Rules' contract could be something as simple as checking if the caller owns the official 'Netflix NFT'. Dapps will most likely need to rely on some type of storage beyond what's available in the contract, as contract storage is limited and this data could potentially be huge. We leave the storage solution up to the implementer here via the storage module within the SDK. We intend to make this modular enough for a data owner to use any type of storage they choose, though to begin we limit this to only IPFS and [S3 buckets]??.
+
 
 ### Ecosystem Fit
 
@@ -388,7 +395,7 @@ Goals:
 - **FTE:**  2.5
 - **Costs:** 8,000 USD
 
-* note: Milestones 3 and 4 can potentially undergo parallel development.
+* note: Milestones 3 and 4 can potentially undergo parallel development. This milestone is purely related to development of core pieces of the protocol, particularly the disputes phase.
 
 Goals:
 - implement the disputes phase for session validators and societies
@@ -413,8 +420,9 @@ Goals:
 
 Goals:
 - enable a rule based system to determine if an address can decrypt data
-- develop tools to define and deploy these rules
-
+- develop and test a set of contracts to act as a base rule set
+- develop tools to define and deploy these rules using a DSL
+- showcase features and capabilities of everything developed thus far by building a dapp
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
@@ -426,7 +434,7 @@ Goals:
 | 1 .| Substrate Module: SNFT Pallet | We modify the SNFT pallet so that an owner of a pubkey and specify a contract address that needs to be invoked to get access to data.  | 
 | 2. | Contracts | We will work off of the contract [here](https://github.com/ideal-lab5/contracts) developed as part of Iris.  |
 | 3. | SDK: DSL | We design and implement the DSL module of our SDK and enhance the VSS Module in order to ensure smart contract support. This DSL module will allow users to design rules and deploy them as a contract, which can then be associated with their public key via the snft pallet. |
-| 3. | | |
+| 4. | SDK: Generic Secret Sharing Dapp | The final task of the final milestone is to use everything that has been developed thus far and to build a dapp on top of it. Our inital dapp will be a simple secret sharing platform.  We will build an interface that lets users create secrets, store them, define rules for access, share secrets, etc. We want this experience to showcase the full feature set that we have developed. |
 
 ...
 
@@ -437,16 +445,14 @@ Please include here
 
 - We would like to explore the usage of XCM in order to accomplish cross-chain 'data locks', wherein the proof of a condition on chain A (e.g. owning some specific asset on Ajuna) would equate to decyryption rights being granted in Cryptex.
 - We intend to further enhance the protocol, to continue to research ways to make it more performant, more secure, and to make it more privacy preserving. In essence, we ultimate want to ensure that the 'society' that is formed to hold shares is a 'secret society', or rather a blind society.
-- We intend to build tools on top of this functionality to enable developers to make use of the protocol.
-- Short term intentions include further testing and enancements of the core protocol, building out simple tools and applications, such as a general secret sharing platform, and to work with engineers in web2 industries to prevent ways to decentralize their data architecture.
+- We may investigate using an atomic broadcast approach, as in honeybadger BFT.
+- Short term intentions include further testing and enhancements of the core protocol, building out simple tools and applications, and evangelizing the project/building a community. We will also inquire about a full security audit.
 
 ## Additional Information :heavy_plus_sign:
 
 **How did you hear about the Grants Program?** Web3 Foundation Website / Medium / Twitter / Element / Announcement by another team / personal recommendation / etc.
-- 
+- Tony initially heard about this a year ago via the substrate website. Collectively, we all learned about this at the polkadot blockchain academy.
 
 Here you can also add any additional information that you think is relevant to this application but isn't part of it already, such as:
 
-- Work you have already done.
-- If there are any other teams who have already contributed (financially) to the project.
-- Previous grants you may have applied for.
+- As stated previously, Tony has worked on two grants previous to this one. The items in this grant are very much inspired by the Iris grant, however, it is intended to fix all of the vulnerabilities and issues (i.e. lack of scalability) that Iris failed to do.
