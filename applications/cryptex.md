@@ -266,8 +266,14 @@ I am an engineer and math-lover with a passion for exploring new ideas. I studie
 [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris_followup.md). Beyond that, I have dabbled in many open source projects as well as have built my own, ranging from computer vision, machine learning, to blockchains and IoT.  Most recently, I attended the Polkadot Blockchain Academy in Buenos Aires, and this new proposal is an application of ideas I learned there applied to my previous grant.
 
 ### Carlos Montoya
-Carlos has been doing software for more than 20 years now, most recently in the startup world. 
-- **Education**
+I have been doing software for more than 20 years now, most recently in the startup world. 
+- **Blockchain Experience**
+Through 2022 I was mainly focused on building smart contracts with solidity and took part in some encode-club boot camps and ETH Global hackathons. I built several apps, one of them a decentralized job-board app and protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). In Early 2023 I participated in the Polkadot blockchain academy in Buenos Aires, and Cryptex's idea emerged.
+- **Software Engineering Experience**
+  Since early 2021 I have been building [TeamClass](https://www.teamclass.com) as CTO and partner. TeamClass is a b2b marketplace for helping companies with their team-building initiatives through virtual events. We bootstrapped TeamClass ourselves and made sales by 3.8M in our first year. Previously, between 2016 and 2020 I was completely focused on building [StellarEmploy](https://www.stellaremploy.com) with my co-founders, where we had the opportunity to participate in NY ERA (Accelerator), and got institutional capital. StellarEmploy's technology was recently acquired by Learning Collider. Finally, between 2004 and 2015, I was CTO and Chief Architect at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm with a deep focus on energy solutions. During my time there I had the responsibility of defining the way of doing software for the entire company, leading very skilled people, building complex software products, and managing hundreds of initiatives for helping the company to expand its operations in Colombia, the Dominican Republic, and Mexico. 
+  
+  
+**Education**
   - **Carnegie Mellon University**
     Master of Science Information Technology, 2011 - 2013
   - **Tecnológico de Monterrey**
@@ -276,13 +282,6 @@ Carlos has been doing software for more than 20 years now, most recently in the 
     Innovation and Technology Management, 2009 - 2010
   - **Universidad Autónoma de Manizales**
     Systems Engineer, 1997 - 2002
-- **Blockchain Experience**
-Through 2022 Carlos had the chance to learn a lot about building smart contracts with solidity, and took part of some encode-club bootcamps and ETH Global hackathons. During this period of time he built several apps, one of them a decentralized job-board app and protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). At the same time he started to learn rust and recently took part of the polkadot academy in Buenos Aires with very good performance. During the polkadot academy he was able to build a uniswap V2 Dex pallet, and XCM communication scenario, and some other cool use cases.
-- **Software Engineering Experience**
-  - Between 2004 and 2015, at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm with a deep focus in the energy industry, he was in charge of defining the way of doing great software for the entire company, leading the most skilled people, building the most complex software products and managing hundreds of initiatives for helping the company to expand its operations in Colombia, Dominican Republic, and Mexico. 
-  - Between 2016 and 2020 he was completely focused on building [StellarEmploy](https://www.stellaremploy.com) with his co-founders, where we had the opportunity to take part of NY ERA accelerator, and got institutional Money. StellarEmploy technology was recently acquired by Learning Collider.  
-  - Since early 2021 Carlos has been focused mainly on [TeamClass](https://www.teamclass.com), a b2b marketplace for helping companies with their team-building initiatives through virtual events. We bootstrapped TeamClass ourselves and made sales by 3.8M in our first year.
-
 
 ### Juan Girini
 
