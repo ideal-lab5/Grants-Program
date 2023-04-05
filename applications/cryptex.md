@@ -282,7 +282,7 @@ I am an engineer and math-lover with a passion for exploring new ideas. I studie
 [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris_followup.md). Beyond that, I have dabbled in many open source projects as well as have built my own, ranging from computer vision, machine learning, to blockchains and IoT.  Most recently, I attended the Polkadot Blockchain Academy in Buenos Aires, and this new proposal is an application of ideas I learned there applied to my previous grant.
 
 ### Carlos Montoya
-I have been doing software for more than 20 years now, most recently in the startup world. 
+I have been doing software for more than 20 years, most recently in the startup world. 
 - **Blockchain Experience**
 Through 2022 I was mainly focused on building smart contracts with solidity and took part in some encode-club boot camps and ETH Global hackathons. I built several apps, one of them a decentralized job-board app and protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). In Early 2023 I participated in the Polkadot blockchain academy in Buenos Aires, and Cryptex's idea emerged.
 - **Software Engineering Experience**
