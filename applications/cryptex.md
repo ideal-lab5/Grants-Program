@@ -210,7 +210,11 @@ We will build an SDK with the following capabilities to allow developers and pro
     <img src="../static/img/Cryptex-Storage-final.jpeg" alt="SDK Storage Capability"/>
   </p>
 
-  - **Graphql API:** provides types and functions to fetch data saved on-chain and off-chain related to Blind DKG in a developer friendly way. We may also explore the usage of [subquery](https://subquery.network/). This may not be in scope of the current grant.
+  - **Graphql API:** provides types and functions to fetch data saved on-chain and off-chain related to Blind DKG in a developer friendly way. We may also explore the usage of [subquery](https://subquery.network/). This may not be in scope of the current grant. The following diagram shows a high-level conceptual design of this capability:
+  
+  <p align="center">
+    <img src="../static/img/Cryptex-Graphql.jpeg" alt="SDK Graphql Capability"/>
+  </p>
 
 From a user-centric perspective, the basic vision for the architecture needed to build a dapp on cryptex might look something like this.
 
