@@ -309,8 +309,9 @@ Following my graduation from the academy, I joined Parity as a Core Rust Enginee
 ### Team Code Repos
 
 - https://github.com/ideal-lab5/cryptex-node
+- https://github.com/ideal-lab5/cryptex-sdk
+- https://github.com/ideal-lab5/cryptex-contracts
 - https://github.com/ideal-lab5/blind-dkg
-- https://github.com/ideal-lab5/contracts
 
 Please also provide the GitHub accounts of all team members. If they contain no activity, references to projects hosted elsewhere or live are also fine.
 
@@ -339,7 +340,7 @@ If you've already started implementing your project or it is part of a larger re
   - This work builds on the previous work done by Tony in his Iris project (see previous w3f grants).
   - I've started a substack to explain the protocol and document its development. Part 1 is published here: https://ideallabs.substack.com/p/blind-dkg-part-1
 - references to conversations you might have had related to this project with anyone from the Web3 Foundation
-  - We have spoken with several individuals involved with the grants program and with square one, specficially Coleman Maher and Nico Morgan, in a non-technical capacity, to discuss the high-level idea and potential. 
+  - We have spoken with several individuals involved with the grants program and with square one, specifically Coleman Maher and Nico Morgan, in a non-technical capacity, to discuss the high-level idea and potential. 
   - During an evaluation of the Iris grant, I spoke with the evaluator Diego and he expressed scepticism around the security of the approach taken in Iris. While attending the PBA, after discussing secret sharing ideas with instructors and other engineers at Parity and becoming more well-versed in cryptography, I was able to reimagine the secret sharing implemented in Iris and redesign the system in order to fix the vulnerabilities inherent in the approach, and to make it truly 'unstoppable'. I have shared this idea as well as the draft whitepaper with several parity engineers as well, though that is not a formal review of it.
 
 ## Development Roadmap :nut_and_bolt:
