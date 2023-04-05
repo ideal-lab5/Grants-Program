@@ -76,7 +76,8 @@ As an aside: The idea of validators being able to participate in a VSS scheme ha
  
 
 <p align="center">
- <img src="../static/img/spk.png" alt="Secret Society high-level overview"/>
+
+ <img src="https://github.com/ideal-lab5/Grants-Program/blob/dkg/static/img/spk.png?raw=true" alt="Secret Society high-level overview"/>
 </p>
 
 #### Disputes Phase
@@ -98,7 +99,7 @@ To derive keys, we use a new group generator $h$ to ensure a uniform distributio
 Initially, we plan on using El Gamal for encryption and decryption. The encryption scheme will be over the same curve as the DKG, so that during the encryption phase the encrypting party only needs to use the derived public key as any normal public key. To decrypt however, we need to reconstruct the private key. To do so, we need to calculate the sum of the secret shares. This might sound difficult: if only a threshold of participants are available, we still don't have enough information to construct the private key (since it is the sum of ALL shares)! But that's where the magic of the DKG comes in play. Since we used a DKG to generate the keys, the entire secret can be recovered by any threshold of collaborating participants! So as long as a threshold is honest and online, we can always reconstruct the secret key.
 
 <p align="center">
- <img src="../static/img/dkg_enc.png" alt="encryption"/>
+ <img src="https://github.com/ideal-lab5/Grants-Program/blob/dkg/static/img/dkg_enc.png?raw=true" alt="encryption"/>
 </p>
 
 #### Non-interactive Secret Sharing
@@ -146,7 +147,7 @@ We use an approach similar to a [DID](https://www.w3.org/TR/did-core/) to allow 
 We will build an SDK with the following capabilities to allow developers and protocols to interact with cryptex:
  
   <p align="center">
-    <img src="../static/img/Cryptex-SDK.jpg" alt="SDK Capabilities"/>
+    <img src="https://github.com/ideal-lab5/Grants-Program/blob/dkg/static/img/Cryptex-SDK.jpg?raw=true" alt="SDK Capabilities"/>
   </p>
 
   - **Encryption:** provides types and functions to encrypt and decrypt secrets. This functionality will rely on the wasm build of the [blind dkg library](#blind-dkg-library).
@@ -154,25 +155,25 @@ We will build an SDK with the following capabilities to allow developers and pro
   - **Rules DSL:** a domain specific language to define/model access rules required to get access to  a shared secret. Once defined, rules are packaged/translated to smart contracts. In future versions we will build a graphic editor to define these rules using our DSL as building block. The following diagram shows a high-level conceptual design of this capability:
   
   <p align="center">
-    <img src="../static/img/Cryptex-RulesDSL-final.jpeg" alt="SDK Rules DSL Capability"/>
+    <img src="https://github.com/ideal-lab5/Grants-Program/blob/dkg/static/img/Cryptex-RulesDSL-final.jpeg?raw=true" alt="SDK Rules DSL Capability"/>
   </p>
 
   - **Storage:** provides types and functions to save/read/update ciphered documents through different datasource options. The first version will provide IPFS as data storage option but we are going to expand this module in the future to include centralized options as well such S3, Google Drive, between others. We will use a `MultiAddress` to locate data and a `CID` to identify it. The following diagram shows a high-level conceptual design of this capability:
   
   <p align="center">
-    <img src="../static/img/Cryptex-Storage-final.jpeg" alt="SDK Storage Capability"/>
+    <img src="https://github.com/ideal-lab5/Grants-Program/blob/dkg/static/img/Cryptex-Storage-final.jpeg?raw=true" alt="SDK Storage Capability"/>
   </p>
 
   - **Graphql API:** provides types and functions to fetch data saved on-chain and off-chain related to Blind DKG in a developer friendly way. We may also explore the usage of [subquery](https://subquery.network/). This is not explicitly within the scope of this grant. The following diagram shows a high-level conceptual design of this capability:
   
   <p align="center">
-    <img src="../static/img/Cryptex-Graphql.jpeg" alt="SDK Graphql Capability"/>
+    <img src="https://github.com/ideal-lab5/Grants-Program/blob/dkg/static/img/Cryptex-Graphql.jpeg?raw=true" alt="SDK Graphql Capability"/>
   </p>
 
 From a user-centric perspective, the basic vision for the architecture needed to build a dapp on cryptex might look something like this.
 
 <p align="center">
- <img src="../static/img/high_level_cryptex_user_centered.drawio.png" alt="SDK interactions overview"/>
+ <img src="https://github.com/ideal-lab5/Grants-Program/blob/dkg/static/img/high_level_cryptex_user_centered.drawio.png?raw=true" alt="SDK interactions overview"/>
 </p>
 
 Dapps built on the protocol would essentially be 'multiaddress and CID management' contracts which would be responsible for storage and curation of the multiaddresses and CIDs that are encrypted with some given public key. For example, a 'Netflix' dapp might look like some type of decentralized database mapping CIDs to some set of metadata (e.g. title, genre, rating), where the CIDs point to data encrypted with the Netflix public key generated via the DKG. The 'Netflix Rules' contract could be something as simple as checking if the caller owns the official 'Netflix NFT'. Dapps will most likely need to rely on some type of storage beyond what's available in the contract, as contract storage is limited and this data could potentially be huge. We leave the storage solution up to the implementer here via the storage module within the SDK. We intend to make this modular enough for a data owner to use any type of storage they choose, though to begin we limit this to only IPFS.
