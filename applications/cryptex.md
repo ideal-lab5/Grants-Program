@@ -188,8 +188,14 @@ This pallet enables the onchain representation of public keys derived through bl
 
 We use an approach similar to a [DID](https://www.w3.org/TR/did-core/) to allow the public keys created as part of the derivation phase of the VSS as unique, ownable, usable onchain entities. We could also consider this as some special kind of NFT, so we call it an SNFT (s for secret). The owner of the public key is able to request a decryption key at any time. Further, this pallet will allow the owner, or an authorized proxy, to temporarily (or permanently) provision access to other addreseses to request key shares from the network (like temorary delegate for a DID).
 
-##### SDK
+###### SDK
+
 We will build an SDK with the following capabilities to allow developers and protocols to interact with cryptex:
+ 
+  <p align="center">
+    <img src="../static/img/Cryptex-SDK.jpg" alt="SDK Capabilities"/>
+  </p>
+
   - **Encryption:** provides types and functions to encrypt and decrypt secrets. This functionality will rely on the wasm build of the [blind dkg library](#blind-dkg-library).
   - **VSS Client:** provides types and functions to interact with the protocol, some examples of such interactions are encryption key requests and secret sharing requests. We will build this with either polkadotjs or [Capi](https://github.com/paritytech/capi). It contains the calls needed to interact with the DKG pallet for key generation and the SNFT pallet for reencryption and for delegating decryption rights to other identities. This module also provides support for interacting with smart contracts (maybe with [use ink](https://github.com/paritytech/useink)). We would also like to explore using a light client, and potentially delve into [mobile compatibility](https://github.com/paritytech/trappist-extra).
   - **Rules DSL:** a domain specific language to define/model access rules required to get access to  a shared secret. Once defined, rules are packaged/translated to smart contracts. In future versions we will build a graphic editor to define these rules using our DSL as building block. The following diagram shows a high-level conceptual design of this capability:
@@ -278,7 +284,7 @@ Tony has worked on two, [here as "iridium"](https://github.com/w3f/Grants-Progra
 I am an engineer and math-lover with a passion for exploring new ideas. I studied mathematics at the University of Wisconsin and subsequently went to work at [Fannie Mae](https://en.wikipedia.org/wiki/Fannie_Mae) and then [Capital One](https://en.wikipedia.org/wiki/Capital_One), where I mainly worked on fintech products, like systems for loan servicing and efficient pricing algorithms. For the previous year and a half, I've been working exclusively in the web3 space, including having worked on two web3 foundation grants [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris.md) and [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris_followup.md). Beyond that, I have dabbled in many open source projects as well as have built several of my own, ranging from computer vision, machine learning, to blockchains and IoT.  Most recently, I attended the Polkadot Blockchain Academy in Buenos Aires, and this new proposal is an application of ideas I learned there applied to my previous grant.
 
 ### Carlos Montoya
-I have been doing software for more than 20 years now, most recently in the startup world. 
+I have been doing software for more than 20 years, most recently in the startup world. 
 - **Blockchain Experience**
 Through 2022 I was mainly focused on building smart contracts with solidity and took part in some encode-club boot camps and ETH Global hackathons. I built several apps, one of them a decentralized job-board app and protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). In Early 2023 I participated in the Polkadot blockchain academy in Buenos Aires, and Cryptex's idea emerged.
 - **Software Engineering Experience**
