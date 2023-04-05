@@ -287,17 +287,10 @@ I have been doing software for more than 20 years, most recently in the startup 
 Through 2022 I was mainly focused on building smart contracts with solidity and took part in some encode-club boot camps and ETH Global hackathons. I built several apps, one of them a decentralized job-board app and protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). In Early 2023 I participated in the Polkadot blockchain academy in Buenos Aires, and Cryptex's idea emerged.
 - **Software Engineering Experience**
   Since early 2021 I have been building [TeamClass](https://www.teamclass.com) as CTO and partner. TeamClass is a b2b marketplace for helping companies with their team-building initiatives through virtual events. We bootstrapped TeamClass ourselves and made sales by 3.8M in our first year. Previously, between 2016 and 2020 I was completely focused on building [StellarEmploy](https://www.stellaremploy.com) with my co-founders, where we had the opportunity to participate in NY ERA (Accelerator), and got institutional capital. StellarEmploy's technology was recently acquired by Learning Collider. Finally, between 2004 and 2015, I was CTO and Chief Architect at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm with a deep focus on energy solutions. During my time there I had the responsibility of defining the way of doing software for the entire company, leading very skilled people, building complex software products, and managing hundreds of initiatives for helping the company to expand its operations in Colombia, the Dominican Republic, and Mexico. 
-  
-  
-**Education**
-  - **Carnegie Mellon University**
-    Master of Science Information Technology, 2011 - 2013
-  - **Tecnológico de Monterrey**
-    Master in Information Technology Management, 2011 - 2013
-  - **Universidad Pontificia Bolivariana**
-    Innovation and Technology Management, 2009 - 2010
-  - **Universidad Autónoma de Manizales**
-    Systems Engineer, 1997 - 2002
+- **Carnegie Mellon University** Master of Science Information Technology, 2011 - 2013
+- **Tecnológico de Monterrey** Master in Information Technology Management, 2011 - 2013
+- **Universidad Pontificia Bolivariana** Innovation and Technology Management, 2009 - 2010
+- **Universidad Autónoma de Manizales** Systems Engineer, 1997 - 2002
 
 ### Juan Girini
 
