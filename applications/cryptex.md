@@ -1,7 +1,7 @@
 # Cryptex
 
 - **Team Name:** Ideal Labs
-- **Payment Address:** 0x2CDA3C7D6e21Cc4f43C170c0dFf2e9F3B3B5E889 (USDT)
+- **Payment Address:** 0x2CDA3C7D6e21Cc4f43C170c0dFf2e9F3B3B5E889 (USDC)
 - **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 3
 
 ## Project Overview :page_facing_up:
@@ -169,9 +169,13 @@ Root
 - `set_election_params(signed_origin, params)`: Set any parameters related to the elections as needed.
 - `set_max_custodians(signed_origin, u32)`: Set the maximum number of active and inactive custodians
 
-Additionally, this pallet will handle the reward calculation and distribution based on the `reserved_balance` used to request the DKG and the performance of the participants in the DKG. We will implement our pallet so that it is generic in this regard, however, in practice, our reward mechanism is as follows:
+Additionally, this pallet will handle the reward calculation and distribution based on the `reserved_balance` used to request the DKG and the performance of the participants in the DKG. We will implement our pallet so that it is generic in this regard, however, in practice, our reward mechanism will be quite simple. Without going in depth on the inflation and economics of the blockchain, our scheme will *loosely* be as follows:
 
-TODO
+1. Each validator will be able to charge a transaction fee, probably static across all validators to begin but made more dynamic in the future
+2. When the dkg is triggered, the caller reserves $n * fee$ tokens.
+3. After a key is derived, each participant receives the $fee$ amount if they participated honestly and contributed to deriving the pubkey.
+4. If some validators' shares were rejected through the disputes process, the fee is refunded to the caller. If a threshold of validators issue invalid shares, then then entire reserve balance is returned to the caller.
+5. Dishonest participants will have their stake slashed by some percentage of their stake.
 
 ###### SNFT Pallet
 
