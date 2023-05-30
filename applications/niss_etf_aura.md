@@ -1,8 +1,8 @@
 # Cryptex: Non-Interactive Secret Sharing in a PoA EtF Network
 
-- **Team Name:** Driemworks
+- **Team Name:** Ideal Labs
 - **Payment Address:** TODO
-- **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 2
+- **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 3
 
 ## Project Overview :page_facing_up:
 
