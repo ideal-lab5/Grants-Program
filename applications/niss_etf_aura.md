@@ -1,61 +1,144 @@
-# Cryptex: Non-Interactive Secret Sharing in an EtF Network
+# Cryptex: Non-Interactive Secret Sharing in a PoA EtF Network
 
-- **Team Name:** Ideal Labs
+- **Team Name:** Driemworks
 - **Payment Address:** TODO
-- **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 3
+- **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 2
 
 ## Project Overview :page_facing_up:
 
-Cryptex is an EtF (encryption to the future) network using Aura. Our proposal builds the EtF network and a non-interactive secret sharing scheme on top of it.
+Cryptex is an EtF (encryption to the future) network based on Aura consensus. Our proposal builds the EtF network and a non-interactive secret sharing scheme on top of it.
 
 ### Overview
 
-Cryptex is blockchain that uses a modified Aura which uses a treshold identity based encryption scheme to seal blocks. We then implement an encryption-to-the-future (EtF) scheme, where messages can be encrypted for arbitrary slots in the future. Our runtime will contain a pallet which will enable slot selection and verification (via authentication from past (AfP)). Finally, we propose a modification which enables a non-interactive cryptographically-verifiable-rule-based secret sharing mechanism on the EtF network.
+Cryptex is blockchain that uses a modified Aura which uses a treshold identity based encryption scheme to seal blocks. We then implement an encryption-to-the-future (EtF) scheme, where messages can be encrypted for arbitrary slots in the future. Our runtime will contain a pallet which will manage slot scheduling and verification. Finally, we propose a modification which enables a non-interactive cryptographically-verifiable-rule-based secret sharing mechanism on the EtF network and a light client with extra verifications to ensure proper syncing with the chain.
 
-- An indication of how your project relates to / integrates into Substrate / Polkadot / Kusama.
-
-Cryptex introduces several new cryptographic primitives to the ecosystem which would be beneficial. By developing EtF capabilities, other networks can likewise benefit from EtF-based consensus. 
+Cryptex introduces several new cryptographic primitives to the ecosystem which would be beneficial. By developing EtF capabilities, other networks can likewise benefit from EtF-based consensus. This proposal lays the foundation for a more robust system later on, using a proof of stake consensus (Sassafrass) and more sophisticated cryptographic primitives for EtF, such as [McFly](http://fc23.ifca.ai/preproceedings/189.pdf) or based on [commitment witness encryption ](https://eprint.iacr.org/2021/1423.pdf). An EtF network can enable randomness beacons, sealed-bid auctions, and as we will see shortly, non-interactive secret sharing. 
 
 - An indication of why your team is interested in creating this project.
 
-We want to build more extensive and secure decentralized data tools which allow general decentralized secret sharing.
+We want to build more extensive and secure decentralized data tools which allow general decentralized secret sharing. We believe that the internet is a better place when it's more fair for all.
 
 ### Project Details
 
-There are four major components of the proposal. Firstly, modifying Aura to use TIBE block seals. The major piece will be the EtF implementation. 
+The major components
 
-#### IBE Aura
+1. [IBE Block Seal ](#ibe-block-seal-in-aura)
+2. [Encryption-to-Future](#encryption-to-future-slots)
+3. [Non-interactive secret sharing](#non-interactive-rule-based-secret-sharing)
+4. [Light Client](#light-client)
+5. [SDK](#sdk)
 
-For simplicity, our network will use Aura for block authoring. In the future, we intend to migrate to Sassafrass. For now, we assume that there is a static set of validators defined on network genesis. In Aura consensus, each validator defined in the validator set authors a block in sequential (round robin) order. When a block is authored, the author signs the block, which is referred to as sealing the block. We implement this as a fork of Aura, wherein blocks are sealed using nugget BLS. In particular, we will add IBE capabilities to nugget BLS as per [this comment](https://github.com/w3f/Grants-Program/pull/1660#issuecomment-1563616111). Though we will not be taking advantage of many properties of nugget BLS that make is beneficial, our future plans include functionality which will, so we opt to just use it from the start. 
+#### What this is not
+- this does not use a proof of stake consensus. For the scope of the proposal, we are assuming a static, well defined validator set using PoA consensus based on Aura. 
+- the proposal does not highlight any specific privacy preserving tools
+- this is not using threshold signatures 
+- most of that is scoped for the future though
+
+#### Notation and Terminology
+
+For the following, assume that we are using curve BLS12-381. As such, we will refer to its scalar field using $\mathbb{Z}_p$ where $p$ is the modulus for BLS12-381. Similarly, we have the pairing friendly elliptic curve groups $\mathbb{G}_1$ and $\mathbb{G}_2$.
+
+#### IBE Block Seal in Aura
 
 ##### Overview
 
-1. Genesis
-  - Keygen: Each validator generates a private key and public key and the public key is encoded in the genesis block, with the private key stored by the validator (will need to highlight key management practices later on, should be strictly enforced for validators).
-2. Block Sealing: 
-3. 
+https://docs.rs/sc-consensus-aura/latest/sc_consensus_aura/
 
-- `initialize_authorities`
+For simplicity, our network will use Aura for consensus. In the future, we intend to migrate to [Sassafrass](https://eprint.iacr.org/2023/031.pdf). For now, we assume that there is a static set of validators defined on network genesis. In Aura, each validator defined in the validator set authors a block in sequential (round robin) order. We will create a fork of Aura, wherein blocks are sealed using IBE signatures using nugget BLS, as per [this comment](https://github.com/w3f/Grants-Program/pull/1660#issuecomment-1563616111). Though we will not be taking advantage of many properties of nugget BLS that make it beneficial, our future plans include functionality which will, so we opt to just use it from the start [TODO double check if I want that...]. 
+  
+Let $A = \{A_1, ..., A_n\}$ be the well defined set of authorites in the chain spec. For now, we'll assume that this set is static. In Aura slots are divided into discrete slots of $t$ seconds each. For any slot $s$, the winner of the slot is determined by $A[s\;\%\;|A|]$, where $A$ is the set of authorities defined on genesis. For now, we assume that each slot has a unique winner among the set of validators.
+  
+- **Identity Based Encryption**
+The IBE scheme we use is the [Waters IBE](https://eprint.iacr.org/2004/180.pdf). It may not be incredibly optimized, but it is straight forward to use and implement, and has provable security.
 
+---
+- **Genesis/Setup**
 
--> define how this will look on genesis
--> should this be rerun each new session?
+  1.  (standard stuff) Each validator generates a private key and public key for the underlying signature scheme of the blockchain. Theoretically this could be implemented on any scheme, but we use BLS12-381. Each $A_i \in A$ generates some $\left<sk_i, pk_i\right>$, storing the secret key $sk_i$ securely (in their [keystore](https://paritytech.github.io/substrate/master/sp_keystore/trait.Keystore.html)), with the public keys used to define the initial validators. 
+   
+  2. We define system parameters on genesis:
+    - a randomly chosen $\alpha \in \mathbb{Z}_p$ (output of VRF?). For now, we will assume that this value is static and only defined on genesis.
+    - We choose some random generator $g \in \mathbb{G}$ and calculate $g_1 = g^\alpha$ and randomly choose some $g_2 \in \mathbb{G}$.
+    - We choose a random 128-bit [am i sure about that??] vector $U = (U_i)$ randomly sampled from $\mathbb{G}$ by and encode the tuple $(g, g_1, g_2, u', U)$ within the genesis block.
+  
+  3. On genesis: For each $i \in [n]$, the root user produces a ciphertext $ct_i$ of the secret $\alpha$, which is encrypted under $ID_i$, and encodes it on chain. Prior to the first block, each $A_i$ decrypts $ct_i$ to recover $\alpha$ and places it in its keystore. Later on we will replace this with a more decentralized MPC protocol.
+
+- **KeyGen and Identity**
+  
+  Each slot winner $A_i$ broadcasts a new ephemeral public key $epk_i$ corresponding to its slot $i$. We consider $epk_i$ its epheremal identity,  For now, we will omit the scenario where a slot winner fails to supply a new ephemeral public key [Q: Am I omitting too many imporant pieces?].
+
+- **Block Sealing**
+  The winner of a slot $s$ calculates the secret key corresponding to $epk_i$ and uses it to sign the block. The secret key is calculated as $sk_i = (g_2^\alpha, (u' \sum_{i \in \mathcal{V}_i} u_i)^r, g^r)$, where $r \in \mathbb{Z}_p$ is randomly chosen and $\mathcal{V}_i := \{j \in [n] | epk_{i}[j] = 1\}$. The resuling $sk_i$ is used to sign the block.
+
+- **Validation**
+  When other nodes import the block, they validate it by generating an ID for the IBE scheme using the author of the block and then verifying the signature. 
+
+- **Encryption**
+  For a message $M \in \mathbb{G}_1$ and an ephemeral public key $epk_i$, choose a random $t \in \mathbb{Z}_p$ and calculate the ciphertext: $C = (e(g_1, g_2)^t M, g^t, (u' \prod_{j \in \mathcal{V}_i} u_i)^t)$
+
+- **Decryption**
+  Given a ciphertext $C = (C_1, C_2, C_3)$ as defined above, and a secret $d_i = (d_1, d_2)$, then calculate $M' = C_1 \frac{e(d_2, C_3)}{e(d_1, C_2)}$. If the ciphertext is encrypted for $epk_i$, then $M = M'$
+
+##### Implementation
+using the [SHAKE128 XOF](https://oag.ca.gov/sites/all/files/agweb/pdfs/bciis/06-nist-fips-202.pdf)
+
+in general, this should say which parts of existing code I am going to modify, and any new things that I think I need to add. 
+
+- Genesis Config
+  - Setup authorities and params in chain spec
+  - The Aura pallet genesis should be modified so that it can accept and verify ciphertexts from the root node.
+- epoch randomness will be provided by pallet-randomness-whatever-its-called
+- ephemeral public key derivation
+- secret key calculation
+- need an extrinsic to submit new pubkey, only callable by authorities?
+  - mark them as inactive/active etc
 
 #### Encryption-to-Future Slots
 
-We propose a simple EtF scheme on top of Aura consensus with IBE block seals. Since slot owners in any given session are well known, we can devise a mechanism that allows for encryption to a 'time' in the future. The mechanism we propose is based on the well-known and static nature of the validator set for the time being.
+##### Overview
 
+We propose an Encryption-to-Future (EtF) scheme on top of the modified Aura consensus proposed above.
+
+At a high level, our approach is as follows: Once `RandomnessFromTwoEpochsAgo` is known for an upcoming epoch, we can compute the inputs for specific slots in that epoch. E.g. suppose that the current epoch is $e_{k-2}$, then we can calculate the slot winners for epoch $e_k$ and begin scheduling slots as soon as we know the randomness of the current epoch. Additionally, since we already know what the randomness was in previous epochs, we can schedule any availabe slots in the current or next epochs, $e_{k-2}$, $e_{k-1}$. 
+
+In Aura, blocks are finalized in a discrete interval of time, say $t$ seconds. Assume that there are $m$ slots in each epoch. Then there are roughly $mt$ seconds per epoch, which we can discretely timestamp as slot $sl_{k+1}$ starting at time $kt$ and ending at time $2kt -1$. Suppose the current epoch and current slot is given by $(e_k, sl_m)$. Then we can encrypt to any future slots in the next two epochs by calculating the slot winners based on the order of the validator set. We will assume that the validator set can not grow larger than the number of slots. We'll detail the calculation below.
+
+As can be seen, it will be paramount that all participants agree on the same 'time'.
+
+##### Implementation
+
+- slot scheduling
+- encryption
+- decryption
+
+1. Given some amount of time $t$, calculate a future target slot, $sl_{fut}$, that you want to encrypt to. Since we have a static block time (say of $t_b$ sec/block), we can calculate the range $sl_{fut, 0} = sl_{curr} + floor(t/t_b)$ and $sl_{fut, 1} = sl_{curr} + ceil(t/t_b)$, Then the user can calculate $t_i = t - (sl_{fut, i} - sl_{curr}) * t_b$ for $i \in \{0, 1\}$.  e.g. we can provide best case lower and upper bounds to meet the target time, in number of blocks. Based on the target slot, we can identity a slot winner (we need to make sure all parties agree on this, even light clients...). We'll call the identified winner $A_{fut} = A[sl_{fut, i}]$ for $i = 0$ or $i = 1$.
+2. Encryption:
+   1. Use the public key of $w_{fut}$ to get an ID for the IBE scheme, (i.e. output of `create_nugget_bls`).
+3. Decryption:
 
 #### Non-Interactive Rule-Based Secret Sharing
 
-Once we have achieve EtF, we will implement a scheme on top of it in order to enable non-interactive rule-based secret sharing. The general idea is that some party $U$ has a secret $m$, to which they want to grant decryption rights if any given participant meets a condition $C$. In our case, this condition is some specific transaction in the blockchain, for example, a transaction that deposits one token to $U$'s wallet. In a substrate 
+Once we have achieved EtF and slot scheduling, we will implement a scheme on top of it in order to enable non-interactive rule-based secret sharing. The general idea is that some party $U$ has a secret $m \in \{0, 1\}^*$, to which they want to grant decryption rights if any given participant meets a condition $C$. In our case, this condition is some specific transaction in the blockchain, for example, a transaction that deposits one token to $U$'s wallet. First, $U$ will choose some future slot $sl_{fut}$ and encrypt their message for the expected authority's ephemeral public key (since we have a static validator set, this should work for now), resulting in some ciphertext $ct_{fut}$, which can then be added to some external storage system and identified via some cryptographic hash (e.g. Sha256 as in IFPS) which is then published on-chain along with a transaction type(i.e. extrinsic) that should grant decryption rights to the signer. 
+
+Before the future slot occurs, another participant, $V$, can prepare a transaction that meets the conditions that $U$ published and sign it. Now, $V$ will encrypt the signed transaction for the future slot $sl_{fut}$ as well and publish it. 
+
+When $sl_{fut}$ occurs, the validator decrypts the transaction published by $V$ as well as the 
+
+##### Transaction Types and Commitments
 
 #### Light Client
 
-We present a light client based on smoldot. The light client will connect to specific nodes, as we do not need a mempool. It should also ensure that users clocks are set correctly (i.e. block number), else give an error. We need to make sure requests are properly synchronized to ensure accurate and predicible time of decryption.
+We present a light client using smoldot. The light client will connect to specific nodes, as we do not need a mempool. It should also ensure that users clocks are set correctly (i.e. block number), else give an error. We need to make sure requests are properly synchronized to ensure accurate and predictible time of decryption.
 
 #### SDK
 
+Do we really need an SDK at this point...? most funcs will be done in the node/client, and the rest can be implemented pretty simply with polkadotjs, idk. it'd be great, but we would need to rescope things
+
+---
+TODOS
+- thresholds
+- zpk
+- PoS
 
 
 ### Ecosystem Fit
