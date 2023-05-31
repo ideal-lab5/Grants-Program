@@ -10,11 +10,9 @@ This is an EtF (encryption-to-the-future) network based on Aura. This proposal a
 
 ### Overview
 
-Cryptex is blockchain that uses a modified Aura that seals blocks using identity based signatures. We then implement an encryption-to-the-future (EtF) scheme, where messages can be encrypted for arbitrary slots in the future. Our runtime will contain a pallet which will manage slot scheduling and verification. Finally, we propose a modification which enables a non-interactive cryptographically-verifiable-rule-based secret sharing mechanism on the EtF network and a light client with extra verifications to ensure proper syncing with the chain.
+Cryptex is blockchain that uses a modified Aura that seals blocks using identity based signatures. We then implement an encryption-to-the-future (EtF) scheme, where messages can be encrypted for arbitrary slots in the future. Our proposal consists of a runtime, which modifies Aura and introduces a new pallet to enable the identity based cryptosystem (IBC), a light client and an SDK, which handles synchronization with the blockchain, slot scheduling for encryption, and offchain encryption and decryption functionality.
 
 Being the first EtF network in the ecosystem, Cryptex introduces several new cryptographic primitives which would be useful to others as well. By developing EtF capabilities, other networks can likewise benefit from EtF-based consensus. This proposal lays the foundation for a more robust system later on, using a proof of stake consensus (Sassafrass) and more sophisticated cryptographic primitives for EtF, such as [McFly](http://fc23.ifca.ai/preproceedings/189.pdf) or based on [commitment witness encryption ](https://eprint.iacr.org/2021/1423.pdf). An EtF network can enable randomness beacons, sealed-bid auctions, and non-interactive secret sharing.
-
-- An indication of why your team is interested in creating this project.
 
 We want to build more extensive and secure decentralized data tools which allow general decentralized secret sharing. We believe that the internet is a better place when it's more fair for all.
 
@@ -23,11 +21,7 @@ We want to build more extensive and secure decentralized data tools which allow 
 The major pieces:
 1. [IBS Block Seal](#ibe-block-seal-in-aura)
 2. [Encryption-to-Future](#encryption-to-future-slots)
-3. [Light Client](#light-client)
-
-We also describe plans to implement the following, but it is not scoped within this proposal:
-4. [Non-interactive secret sharing](#non-interactive-rule-based-secret-sharing)
-5. [SDK](#sdk)
+3. [User Agent](#light-client)
 
 #### What this is not
 - this does not use a proof of stake consensus. For the scope of the proposal, we are assuming a static, well defined validator set using PoA consensus based on Aura. 
@@ -47,15 +41,17 @@ https://docs.rs/sc-consensus-aura/latest/sc_consensus_aura/
 
 For simplicity, our network will use Aura for consensus. In the future, we intend to migrate to [Sassafrass](https://eprint.iacr.org/2023/031.pdf). For now, we assume that there is a static set of validators defined on network genesis. In Aura, each validator defined in the validator set authors a block in sequential (round robin) order. We will create a fork of Aura, wherein blocks are sealed using identity based signatures using nugget BLS a Waters IBE, as per [this comment](https://github.com/w3f/Grants-Program/pull/1660#issuecomment-1563616111). Though we will not be taking advantage of many properties of nugget BLS that make it beneficial, our future plans include functionality which will, so we opt to just use it from the start. 
   
-Let $A = \{A_1, ..., A_n\}$ be the well defined set of authorites in the chain spec. For now, we'll assume that this set is static. In Aura slots are divided into discrete slots of $t$ seconds each. For any slot $s$, the winner of the slot is determined by $A[s\;\%\;|A|]$, where $A$ is the set of authorities defined on genesis. For now, we assume that each slot has a unique winner among the set of validators.
+More concretely, let $A = \{A_1, ..., A_n\}$ be the well defined set of authorites in the chain spec. For now, we'll assume that this set is static. In Aura slots are divided into discrete slots of $t$ seconds each. For any slot $s$, the winner of the slot is determined by $A[s\;\%\;|A|]$, where $A$ is the set of authorities defined on genesis. Note that this implies, in most cases, that a validator will author many blocks during an epoch.
   
 - **Identity Based Encryption**
 The IBE scheme we use is the [Waters IBE](https://eprint.iacr.org/2004/180.pdf). We use this to assign a unique role to each slot, which is derived from the slot winner's identity, slot number, and epoch. 
 
 ---
+We provide an overview of how the IBC can be used in the context of a PoA blockchain. 
+
 - **Genesis/Setup**
 
-  1.  (standard stuff) Each validator generates a private key and public key for the underlying signature scheme of the blockchain. Theoretically this could be implemented on any scheme, but we use BLS12-381. Each $A_i \in A$ generates some $<sk_i, pk_i>$, storing the secret key $sk_i$ securely (in their [keystore](https://paritytech.github.io/substrate/master/sp_keystore/trait.Keystore.html)), with the public keys used to define the initial validators. 
+  1.  (standard stuff) Each validator generates a private key and public key for the underlying signature scheme of the blockchain. Theoretically this could be implemented on any scheme, but we use BLS12-381. Each $A_i \in A$ generates keys $(sk_i, pk_i)$, storing the secret key $sk_i$ securely (in their [keystore](https://paritytech.github.io/substrate/master/sp_keystore/trait.Keystore.html)), with the public keys used to define the initial validators. 
    
   2. We define system parameters on genesis:
     - a randomly chosen $\alpha \in \mathbb{Z}_p$ (output of VRF?). For now, we will assume that this value is static and only defined on genesis.
@@ -76,7 +72,8 @@ The IBE scheme we use is the [Waters IBE](https://eprint.iacr.org/2004/180.pdf).
 ##### Implementation Details
 
 In order to implement an IBE block seal in Aura, we need to:
-- setup the system parameters, define authorities, and distribute $\alpha$ to each authority
+
+- Develop a new pallet to enable the identity based cryptosystem to store, submit system parameters
 
 - randomness will be provided by [insecure-randomness-collective-flip](https://github.com/paritytech/substrate/blob/master/frame/insecure-randomness-collective-flip/README.md)
 
@@ -102,32 +99,38 @@ The high level idea is that given a duration of time, $t$, identify a role to wh
 
 As can be seen, it will be paramount that all participants agree on the same 'time'.
 
-##### Implementation
+##### Implementation Details
 
 Since all of this functionality should happen outside the context of a runtime, we implement this as a specialized light client based on [smoldot](https://github.com/smol-dot/smoldot). 
 
 ###### Slot Scheduling
  
-  As mentioned above, the idea is that we can take some arbitrary time in the future, $t_{fut}$, and identify a slot and epoch when that future time is expected to occur (assuming persistent liveness of the network). Assume that the current slot index, $sl_{curr}$, is publicly known and agreed on by everyone (see [light client](#light-client) for more info). 
+  As mentioned above, the idea is that we can take some arbitrary time in the future, $t_{fut}$, and identify a slot and epoch when that future time is expected to occur (assuming persistent liveness of the network). Very roughly, our approach will be similar to the following:
+  
+  If we assume that the current slot index is $sl_{prev}$ and the epoch is $e_k$, then we allow slots to be schedule starting from the next slot in the queue, $sl_{curr}$. Given that each slot lasts a static amount of time, say $t_{slot} \; sec/slot$, we can calculate the slot number $t$ seconds in the future with $sl_{fut} = ((t / t_{slot}) \% s) +1$ where $s$ is the number of slots per epoch. We can then identify the slot winner by calculating $A[{fut}\; \% \; |A|]$.
+
+  The slot schedule calculation will happen in the user-agent, in conjun. The users have already calculated a future slot number and epoch. Then, the light client fetches the authorities for some specified epoch and calculated the inputs for the slot.
 
 ###### Encryption-to-future-slots (EtF)
 
-  Assuming that we have identified a future slot winner $A_{fut}$ for slot $sl_{fut}$, we can derive their ephemeral public key (aka the role) for that slot and create a shared key using [this approach](https://github.com/w3f/Grants-Program/pull/1660#issuecomment-1563616111). We can then use a symmetric encryption scheme, such as El Gamal, to encrypt a message using the resulting public key. The ciphertext can be stored offchain with a reference to it published on-chain (in a pallet or contract) by calculating its sha256 hash, for example.
+  Assuming that we have identified a future slot winner $A_{fut}$ for slot $sl_{fut}$, we can derive their ephemeral public key (aka the role) for that slot and derive a shared key using [this approach](https://github.com/w3f/Grants-Program/pull/1660#issuecomment-1563616111). We can then use a symmetric encryption scheme, such as El Gamal, to encrypt a message using the resulting public key. The ciphertext can be stored offchain with a reference to it published on-chain (in a pallet or contract) by calculating its sha256 hash, for example.
 
 ###### Decryption
 
 When a slot winner's slot is active, they derive a secret key (as above) which they then use to seal the block. Additionally, the derived secret key can also be used to decrypt any messages that were encrypted for this slot. In our first iteration of the network, we will publish this secret key along with the block, so anybody can decrypt the message after the slot completes. We intend to modify this approach in the future, for example, when using threshold signatures later on.
 
 
-#### Light Client
+#### User Agent - SDK + Light Client
 
-We present a light client using smoldot. The light client will connections to specific nodes. It should also ensure that users clocks are set correctly (i.e. block number), else give an error. We need to make sure requests are properly synchronized to ensure accurate and predictible slot scheduling/selection.
+We present an SDK and light client using smoldot. The light client will connect directly to specific validators. It should also ensure that users' clocks are set correctly (i.e. block number), since we need to make sure requests are properly synchronized to ensure accurate and predictible slot scheduling/selection and decryption.
+
+The SDK handles encryption to roles and decryption capabilities later on. It will also be able to handle communication with smart contracts hosted on the blockchain and external storage, realized as IPFS. 
 
 #### High Level Architecture
 
 We propose the architecture of the system at a high level. It consist of three pieces:
 - **the blockchain**: The PoA blockchain with IBS block seals. It is a substrate based runtime with a new pallet that enables the identity based cryptosystem along with our modifications to Aura.
-- **the offchain layer**: A user-agent (client) which handles slot scheduling, encryption, and decryption.
+- **sdk/client**: A user-agent which handles slot scheduling, encryption, and decryption, as well as synchronization with the blockchain.
 - **the storage layer**: Could be anything, we will use IPFS in conjunction with a smart contract or a pallet to store ciphertexts off-chain and their identifiers on-chain.
 
 ![high-level-architecture](./etf.drawio.png)
@@ -137,7 +140,9 @@ We propose the architecture of the system at a high level. It consist of three p
 Help us locate your project in the Polkadot/Substrate/Kusama landscape and what problems it tries to solve by answering each of these questions:
 
 - Where and how does your project fit into the ecosystem?
+  - to date, there is no EtF network in the ecosystem/
 - Who is your target audience (parachain/dapp/wallet/UI developers, designers, your own user base, some dapp's userbase, yourself)?
+  - At this stage, the target audience includes both parachain developers who may want to take advantage of the primitives we plan to introduce, as well as our own user base, 
 - What need(s) does your project meet?
 - Are there any other projects similar to yours in the Substrate / Polkadot / Kusama ecosystem?
   - If so, how is your project different?
@@ -148,50 +153,74 @@ Help us locate your project in the Polkadot/Substrate/Kusama landscape and what 
 ### Team members
 
 - Tony Riemer
-- Names of team members
+- Carlos Montoya
+- Juan Girini
 
 ### Contact
 
 - **Contact Name:** Tony Riemer
 - **Contact Email:** driemworks@idealabs.network
-- **Website:** idealabs.network
+- **Website:** https://idealabs.network
 
 ### Legal Structure
 
 - **Registered Address:** Address of your registered legal entity, if available. Please keep it in a single line. (e.g. High Street 1, London LK1 234, UK)
-- **Registered Legal Entity:** Name of your registered legal entity, if available. (e.g. Duo Ltd.)
+- **Registered Legal Entity:** 
+
 
 ### Team's experience
 
-Please describe the team's relevant experience. If your project involves development work, we would appreciate it if you singled out a few interesting projects or contributions made by team members in the past. 
+Tony has worked on two, [here as "iridium"](https://github.com/w3f/Grants-Program/blob/master/applications/iris.md) and [here as "Ideal Labs"](https://github.com/w3f/Grants-Program/blob/master/applications/iris_followup.md).
 
-If anyone on your team has applied for a grant at the Web3 Foundation previously, please list the name of the project and legal entity here.
+### Tony Riemer
+
+I am an engineer and math-lover with a passion for exploring new ideas. I studied mathematics at the University of Wisconsin and subsequently went to work at [Fannie Mae](https://en.wikipedia.org/wiki/Fannie_Mae) and then [Capital One](https://en.wikipedia.org/wiki/Capital_One), where I mainly worked on fintech products, like systems for loan servicing and efficient pricing algorithms. For the previous year and a half, I've been working exclusively in the web3 space, including having worked on two web3 foundation grants [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris.md) and [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris_followup.md) and as an independent consultant. Beyond the web3-sphere, I have dabbled in many open source projects as well as have built several of my own, ranging from computer vision, machine learning, to IoT and video games.  Most recently, I attended the Polkadot Blockchain Academy in Buenos Aires, and this new proposal is an application of ideas I learned there applied to my previous grant.
+### Carlos Montoya
+I have been doing software for more than 20 years, most recently in the startup world. 
+- **Blockchain Experience**
+Through 2022 I was mainly focused on building smart contracts with solidity, and on taking part in some encode-club bootcamps and ETH Global hackathons. I built several apps, one of them a decentralized job-board protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). In Early 2023 I had the fortune to participate in the Polkadot blockchain academy in Buenos Aires. Cryptex's idea emerged during my time in the academy.
+- **Software Engineering Experience**
+  Since early 2021 I have been building [TeamClass](https://www.teamclass.com) as CTO and partner. TeamClass is a b2b marketplace for helping companies with their team-building initiatives through virtual events. We bootstrapped TeamClass ourselves and made sales by 3.8M in our first year. Previously, between 2016 and 2020 I was completely focused on building [StellarEmploy](https://www.stellaremploy.com) with my co-founders, where we had the opportunity to participate in NY ERA (Accelerator), and got institutional capital. StellarEmploy's technology was recently acquired by Learning Collider. Finally, between 2004 and 2015, I was CTO and Chief Architect at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm with a deep focus on energy solutions. During my time there I had the responsibility of defining the way of doing software for the entire company, leading very skilled people, building complex software products, and managing hundreds of initiatives for helping the company to expand its operations in Colombia, the Dominican Republic, and Mexico. 
+- **Carnegie Mellon University** Master of Science Information Technology, 2011 - 2013
+- **Tecnológico de Monterrey** Master in Information Technology Management, 2011 - 2013
+- **Universidad Pontificia Bolivariana** Innovation and Technology Management, 2009 - 2010
+- **Universidad Autónoma de Manizales** Systems Engineer, 1997 - 2002
+
+### Juan Girini
+
+ I am a software engineer with nearly 20 years of experience. Over the years, I have worked in various industries and have gained valuable experience in backend projects for the web2 space. However, my passion for decentralization has led me to focus on web3.
+
+I studied Information Systems Engineering at [Universidad Tecnológica Nacional](https://utn.edu.ar/) in Argentina. In early 2023, I graduated from the Polkadot Blockchain Academy in Buenos Aires. This life-changing experience opened doors for me into the world of Substrate. During my time at the academy, I had the opportunity to meet with Carlos and Tony. Together, we started to conceive this project.
+
+Following my graduation from the academy, I joined Parity as a Core Rust Engineer in the Pallet Contracts team. Some of my previous working experiences are Backend Developer at [Scayle](https://www.scayle.com/); Lead Engineer at [Cohabs](https://www.cohabs.com/); and Head of Development at [Barracuda Digital](https://barracuda.digital/).
 
 ### Team Code Repos
 
-- https://github.com/<your_organisation>/<project_1>
-- https://github.com/<your_organisation>/<project_2>
+- https://github.com/ideal-lab5/cryptex-node
+- https://github.com/ideal-lab5/cryptex-sdk
+- https://github.com/ideal-lab5/contracts
+- https://github.com/ideal-lab5/dkg
 
 Please also provide the GitHub accounts of all team members. If they contain no activity, references to projects hosted elsewhere or live are also fine.
 
-- https://github.com/<team_member_1>
-- https://github.com/<team_member_2>
+- https://github.com/driemworks
+- https://github.com/carloskiron
+- https://github.com/juangirini
 
-### Team LinkedIn Profiles (if available)
+### Team LinkedIn Profiles
 
-- https://www.linkedin.com/<person_1>
-- https://www.linkedin.com/<person_2>
+- https://www.linkedin.com/in/tony-riemer/
+- https://www.linkedin.com/in/cmonvel/
+- https://www.linkedin.com/in/juan-girini/
+
 
 
 ## Development Status :open_book:
 
 If you've already started implementing your project or it is part of a larger repository, please provide a link and a description of the code here. In any case, please provide some documentation on the research and other work you have conducted before applying. This could be:
 
-- links to improvement proposals or [RFPs](https://github.com/w3f/Grants-Program/tree/master/docs/RFPs) (requests for proposal),
-- academic publications relevant to the problem,
-- links to your research diary, blog posts, articles, forum discussions or open GitHub issues,
-- references to conversations you might have had related to this project with anyone from the Web3 Foundation,
-- previous interface iterations, such as mock-ups and wireframes.
+- This proposal is a result of the discussion here: https://github.com/w3f/Grants-Program/pull/1660
+- There are many protocols that use some form of witness encryption to accopmlish something similar, for example [time lock encryption](https://eprint.iacr.org/2015/482.pdf) or [commitment witness encryption](https://eprint.iacr.org/2021/1423). Our protocol is inspired by these ideas but uses a simpler design. 
 
 ## Development Roadmap :nut_and_bolt:
 
@@ -214,12 +243,12 @@ The following items are mandatory for each milestone:
 | **0b.** | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can (for example) spin up one of our Substrate nodes and send test transactions, which will show how the new functionality works. |
 | **0c.** | Testing and Testing Guide | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In the guide, we will describe how to run these tests. |
 | **0d.** | Docker | We will provide a Dockerfile(s) that can be used to test all the functionality delivered with this milestone. |
-| 0e. | Article | We will publish an **article**/workshop that explains [...] (what was done/achieved as part of the grant). (Content, language and medium should reflect your target audience described above.) |
+| **0e.** | Article | We will publish an **article**/workshop that explains [...] (what was done/achieved as part of the grant). (Content, language and medium should reflect your target audience described above.) |
 
 ### Milestone 1 — IBS Block Seal
 
 - **Estimated duration:** 1.5 months
-- **FTE:**  1,5
+- **FTE:**  1.5
 - **Costs:** 15,000 USD
 
 Goal: Implement the IBS block seal in Aura. We do this by creating a new pallet to facilitate the identity based cryptosystem, as well as modifying the Aura pallet and client code.
@@ -233,16 +262,16 @@ Goal: Implement the IBS block seal in Aura. We do this by creating a new pallet 
 ### Milestone 2 — Etf Implementation
 
 - **Estimated Duration:** 1.5 months
-- **FTE:**  1,5
+- **FTE:**  1.5
 - **Costs:** 15,000 USD
 
-Goal: We want to enable encryption to future slots, including slot scheduling, encryption, and decryption. Encryption and decryption activities should occur in an offchain context.
+Goal: We want to enable encryption to future slots, including slot scheduling, encryption, and decryption. Encryption and decryption activities should occur in an offchain context. The capabilities delivered here are all related to offchain calculations.
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
-| 1. | Slot Scheduler | We implement slot scheduling logic to identify a future slot and derive its role/inputs. We will implement this within a smoldot client. |
-| 2. | Offchain Encryption | Using the output of the slot scheduler, the user agent will be able to create a shared key with the role for the future slot and encrypt data (el gamal) for the role.  |
-| 3. | Offchain Decryption | We modify Aura to sign blocks with its secret key generated with the identity based cryptosystem as detailed above. We also modify the signature validation phase of consensus to verify the IBS signatures properly.|
+| 1. | Client: Slot Scheduler | We implement slot scheduling logic to identify a future slot and derive its role/inputs. We will implement this within a smoldot client. |
+| 2. | SDK: Encryption + Storage | Using the output of the slot scheduler, the user agent will be able to create a shared key with the role for the future slot and encrypt data (el gamal) for the role. We also integrate with IPFS and use it to store the ciphertext. |
+| 3. | SDK: Decryption | After a block is authored for the specified future slot, we can decrypt the secret by fetching the secret published with the block and using it to decrypt the ciphertext created previously. |
  
 ...
 
