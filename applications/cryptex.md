@@ -122,7 +122,7 @@ We propose the architecture of the system at a high level. It consist of three p
 - **user-agent: sdk & client**: A user-agent which handles slot scheduling, encryption, and decryption, as well as synchronization with the blockchain.
 - **application + storage layer**: Could be anything, we will use IPFS in conjunction with a smart contract or a pallet to builds apps on the network.
 
-![high-level-architecture](./etf.drawio.png)
+![high-level-architecture](https://github.com/ideal-lab5/Grants-Program/blob/951b2794708ec62b012b8c6a3d40e98ba4c17d65/applications/etf.drawio.png?raw=true)
 
 ### Ecosystem Fit
 
