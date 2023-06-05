@@ -22,7 +22,7 @@ The major pieces:
 1. [IBS Block Seal](#ibe-block-seal-in-aura)
 2. [Encryption-to-Future](#encryption-to-future-slots)
 
-For a more in-depth (informal) look at the mathematics behind this, look at [etf_aura.pdf](./etf_aura.pdf)
+For a more in-depth (informal) look at the mathematics behind this, look at [etf_aura.pdf](https://github.com/ideal-lab5/Grants-Program/blob/ibe/applications/etf_aura.pdf)
 
 #### What this is not
 - this does not use a proof of stake consensus. For the scope of the proposal, we are assuming a static, well defined validator set using PoA consensus based on Aura. 
@@ -36,7 +36,7 @@ For the following, assume that we are using curve BLS12-381. As such, we will re
 #### Background
 
 **Threshold Secret Sharing**
-  Threshold secret sharing (TSS) was first introduced by [Shamir in 1979](https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf). Our protocol uses a TSS scheme with a semi-trusted coordinator to obtain (*not derive) a shared session secret key and shared session public key among the session validator set. We explain this below, and more in depth in [etf_aura.pdf](./etf_aura.pdf).
+  Threshold secret sharing (TSS) was first introduced by [Shamir in 1979](https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf). Our protocol uses a TSS scheme with a semi-trusted coordinator to obtain (*not derive) a shared session secret key and shared session public key among the session validator set. We explain this below, and more in depth in [etf_aura.pdf](https://github.com/ideal-lab5/Grants-Program/blob/ibe/applications/etf_aura.pdf).
   
 **Identity Based Cryptography**
   Identity Based Cryptography (IBC) was first introduced by [Shamir in 1984](https://link.springer.com/content/pdf/10.1007/3-540-39568-7_5.pdf). Since then, there has been significant research into identity based cryptosystems, I present an overview to the reader [here](https://csrc.nist.gov/csrc/media/Presentations/2023/stppa5-ibe/images-media/20230209-stppa5-Dan-Boneh--IBE.pdf). A complete IBC consists of six algorithms: `Setup, Keygen, Encrypt, Decrypt, Sign, Verify`. Our network will leverage the sign and verify functionalities to seal and verify blocks, and will use the encrypt and decrypt functionalities to enable encryption-to-future-slots.
@@ -55,7 +55,7 @@ Assume there is a static set of validators defined on network genesis. In Aura, 
 
 **Implementation**
 
-We provide an overview of how the IBC can be used in the context of our blockchain using Aura. We will attempt to make this a technical treatment while omitting some of the mathematical details. For details, we again refer the reader to [etf_aura.pdf](./etf_aura.pdf) 
+We provide an overview of how the IBC can be used in the context of our blockchain using Aura. We will attempt to make this a technical treatment while omitting some of the mathematical details. For details, we again refer the reader to [etf_aura.pdf](https://github.com/ideal-lab5/Grants-Program/blob/ibe/applications/etf_aura.pdf) 
 
 Our implementation makes use of the [SessionManager](https://paritytech.github.io/substrate/master/pallet_session/trait.SessionManager.html) trait to perform session shared public/secret key setup within a new pallet, which facilitates the identity based cryptosystem. 
 
