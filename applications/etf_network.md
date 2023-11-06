@@ -81,27 +81,28 @@ The auction contract we built has two functions, BID and COMPLETE, as mentioned 
  
 #### Delayed Transaction Manager
 
-We will build a dapp to provide a cohesive user experience in which they can manage future proxy status and proxied accounts and to manage and monitor delayed transactions. We have not decided on a specific visualization yet, but have instead a well-defined list of requirements and interactions. We intend to amend this proposal prior to Milestone 4 to supply more in depth information regarding this piece. 
+We will build a dapp to provide a cohesive user experience in which they can manage future proxy status and proxied accounts and to manage and monitor delayed transactions. We have not decided on a specific visualization yet, but have instead a well-defined list of requirements and interactions. We intend to amend this proposal prior to Milestone 4 to supply more in depth information regarding this piece. The transaction manager would play an important role in bringing visibility about the ETF Network activity, along with providing tools for orchestrating flows of chained delayed transactions (transactions that would be executed based on a predefined sequence).
 
 **Future Proxy Manager**
 The future proxy manager is the entrypoint to being able to use delayed transactions. It will incorporate tools to:
-Set an account as a future proxy
-Set or remove an account as a proxy for child accounts
-Soft-derive child accounts
+- Allow account connections
+- Set an account as a future proxy
+- Set or remove an account as a proxy for child accounts
+- Soft-derive child accounts
 
 **Scheduler UI**
+The scheduler module will allow users to construct transactions and/or chain of transactions through a visual interface. Users would be able to schedule transactions to be executed in the future, either independently or as part of a chain of transactions. A chain of transactions is a set of transactions that would be executed if one or more previous transactions stated as pre-requirements have been executed previously. It will incorporate tools to:
+- Construct, sign, encrypt, and schedule transactions for future blocks
+- Define chains of transactions.
+- Cancel or replace scheduled transactions
+- Warn on invalid nonces and prompt new child derivation
 
-The scheduler x
-The scheduler will allow user to construct transactions and/or chain of transactions
-construct, sign, encrypt, and schedule transactions for future blocks
-Cancel or replace scheduled transactions
-Warn on invalid nonces and prompt new child derivation
-
-
-**Explorer UI **
-The explorer will allow visualization of scheduled transactions and provide options to get details during its lifecycle
-View information on scheduled transactions, including which child account was used
-Monitor the execution of scheduled transactions
+**Explorer UI**
+The explorer module will allow visualization of scheduled transactions and provide options to get details during their lifecycle. It will incorporate tools to:
+- Query/Search scheduled transactions (past and future).
+- View detailed information on scheduled transactions, including which child account was used.
+- Monitor the execution of scheduled transactions, and chains of transactions through a visual interface.
+- Subscribe to get notifications about status changes on specific scheduled transactions.
 
 ### Ecosystem Fit
 
@@ -128,9 +129,9 @@ Outside of the ecosystem, [drand](https://drand.love/) is the most similar proje
 
 ### Team members
 
-Tony Riemer
-Carlos Montoya
-Valentina Gomez
+- Tony Riemer
+- Carlos Montoya
+- Valentina Gomez
 
 ### Contact
 
@@ -152,15 +153,7 @@ Valentina Gomez
 I am an engineer and math-lover with a passion for exploring new ideas. I studied mathematics at the University of Wisconsin and subsequently worked at [Fannie Mae](https://en.wikipedia.org/wiki/Fannie_Mae) and then [Capital One](https://en.wikipedia.org/wiki/Capital_One), where I mainly focused on fintech products, including systems for loan servicing, efficient real-time pricing algorithms, and automation of critical customer needs. Since early 2022, I've been working exclusively in the web3 space, including having worked on previous web3 foundation grants [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris.md) and [here](https://github.com/w3f/Grants-Program/blob/master/applications/iris_followup.md) and as an independent consultant. Beyond the web3-sphere, I have dabbled in many open source projects as well as have built several of my own, ranging from computer vision, machine learning, to IoT and video games. In January 2023, I attended (and graduated from) the Polkadot Blockchain Academy in Buenos Aires. Most recently, I have completed a web3 foundation grant which built the initial version of the ETF network.
 
 ### Carlos Montoya
-I have been doing software for more than 20 years, most recently in the startup world. 
-- **Blockchain Experience**
-I am currently building the ETF Network as part of our mission at Ideal Labs. My passion for web3 started a couple of years ago during covid. I started my journey building smart contracts with solidity, and took part in some boot-camps and hackathons through 2021 and 2022. I built several apps, one of them a decentralized job-board protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). Early this year I had the fortune to participate in the PBA hosted in Buenos Aires, and I have been in love with Substrate and Rust since then. The ETF Network idea emerged during my time in the academy.
-- **Software Engineering Experience**
-  Since early 2021 I have been building [TeamClass](https://www.teamclass.com) as CTO and partner. TeamClass is a b2b marketplace for helping companies with their team-building initiatives through virtual events. We bootstrapped TeamClass ourselves and made sales by 3.8M in our first year. Previously, between 2016 and 2020 I was completely focused on building [StellarEmploy](https://www.stellaremploy.com) with my co-founders, where we had the opportunity to participate in NY ERA (Accelerator), and got institutional capital. StellarEmploy's technology was recently acquired by Learning Collider. Finally, between 2004 and 2015, I was CTO and Chief Architect at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm with a deep focus on energy solutions. During my time there I had the responsibility of defining the way of doing software for the entire company, leading very skilled people, building complex software products, and managing hundreds of initiatives for helping the company to expand its operations in Colombia, the Dominican Republic, and Mexico. 
-- **Carnegie Mellon University** Master of Science Information Technology, 2011 - 2013
-- **Tecnológico de Monterrey** Master in Information Technology Management, 2011 - 2013
-- **Universidad Pontificia Bolivariana** Innovation and Technology Management, 2009 - 2010
-- **Universidad Autónoma de Manizales** Systems Engineer, 1997 - 2002
+I have been doing software for more than 20 years, most recently in the startup world. I am currently building the ETF Network as part of our mission at Ideal Labs. My passion for web3 started a couple of years ago during covid. I started my journey building smart contracts with solidity, and took part in some boot-camps and hackathons through 2021 and 2022. I built several apps, one of them a decentralized job-board protocol called [web3Jobs](https://ethglobal.com/showcase/web3jobsfevm-inz64) ([Repo](https://github.com/encode-g2-project)). Early this year I had the fortune to participate in the PBA hosted in Buenos Aires, and I have been in love with Substrate and Rust since then. The ETF Network idea emerged during my time in the academy. Furthermore, since early 2021 I have been building [TeamClass](https://www.teamclass.com) as CTO and partner. TeamClass is a b2b marketplace for helping companies with their team-building initiatives through virtual events. Previously, between 2016 and 2020 I was focused on building [StellarEmploy](https://www.stellaremploy.com) with my co-founders, where we had the opportunity to participate in NY ERA (Accelerator), and got institutional capital. StellarEmploy's technology was recently acquired by Learning Collider. Finally, between 2004 and 2015, I was CTO and Chief Architect at [MVM Software Engineering](https://www.mvm.com.co/?lang=en), a technology firm focused on power energy solutions. During my time there I had the responsibility of defining the way of doing software for the entire company, leading very skilled people, building complex software products, and managing hundreds of initiatives for helping the company to expand its operations in Colombia, the Dominican Republic, and Mexico. 
 
 ### Valentina Gomez
 
