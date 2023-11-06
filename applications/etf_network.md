@@ -25,7 +25,7 @@ This is a followup to our previous grant, in which we built the foundational lay
 1. Implementation of a PoS version of consensus using Dynamic-Committee Proactive Secret Sharing
 2. Development of Delayed Transactions and Timelock Auction V2.0
 3. Delayed Transaction Explorer/Manager
-4. Cumulus compatibility and Rococo Deploy
+4. Cumulus Compatibility and Rococo Deploy
 
 #### Stake-Backed Proof of Extract with PSS
 
@@ -33,7 +33,7 @@ This is a followup to our previous grant, in which we built the foundational lay
 
 In order to ensure the scalability and security of the network, we will implement a direct proof-of-stake (since direct is simpler than delegated) version of our proof of extract mechanism, modeled after Babe. Babe functions in sequential epochs, where each epoch consists of a static number of non-overlapping sequential slots, with authority changes announced one epoch in advance (i.e. the new validator set). Potential block authors from the validator set use a VRF, using accumulated on-chain randomness, to generate a random number which determines if they can propose a block in any given slot. Along with this, our consensus mechnaism dictates that block authors must also calculate the IBE.EXTRACT function and provide a DLEQ proof, which block importers must verify along with the VRF signature. 
 
-In a proof of stake model, we require that the network’s authority set (committee) should be dynamic, where authority membership can change between epochs, or where authorities become unreachable during an epoch. In the initial version of our consensus mechanism, all authorities are also IBE master key custodians, each having complete knowledge of the IBE master secret, making it very difficult to securely add new authorities to the network without a large degree of centralization. A  verifiable secret sharing scheme (such as that used by [drand](https://drand.love/docs/cryptography/#verifiable-secret-sharing)) allows for secret shares to be publicly verified, however, it does not support a dynamic committee (drand has a static set of nodes, the League of Entropy). In order to realize this, we need to distribute the secret key in a way that allows outgoing committees (validator sets) to produce shares for incoming committees. A [proactive secret sharing scheme](https://www.researchgate.net/profile/Amir-Herzberg/publication/221355399_Proactive_Secret_Sharing_Or_How_to_Cope_With_Perpetual_Leakage/links/02e7e52e0ecf4dbae1000000/Proactive-Secret-Sharing-Or-How-to-Cope-With-Perpetual-Leakage.pdf) allows for secret shares to be periodically refreshed, however, this still doesn’t meet the requirement, as it does not account for committee changes. Thus, we require a dynamic committee proactive secret sharing scheme. We intend to use the scheme detailed [here](https://eprint.iacr.org/2022/971.pdf), which relies on a bivariate polynomial in order to build new keys for the next committee. We will perform additional research into the feasibility of replacing the paillier encryption used in the paper above with el gamal encryption instead, as it is also a homomorphic encryption scheme but boasts somewhat better performance (see [here](https://arxiv.org/pdf/2202.02960.pdf)).
+In a proof of stake model, we require that the network’s authority set (committee) should be dynamic, where authority membership can change between epochs, or where authorities may become unreachable during an epoch. In the initial version of our consensus mechanism, all authorities are also IBE master key custodians, each having complete knowledge of the IBE master secret, making it very difficult to securely add new authorities to the network without a large degree of centralization. A  verifiable secret sharing scheme (such as that used by [drand](https://drand.love/docs/cryptography/#verifiable-secret-sharing)) allows for secret shares to be publicly verified, however, it does not support a dynamic committee (drand has a static set of nodes, the League of Entropy). In order to realize this, we need to distribute the secret key in a way that allows outgoing committees (validator sets) to produce shares for incoming committees. A [proactive secret sharing scheme](https://www.researchgate.net/profile/Amir-Herzberg/publication/221355399_Proactive_Secret_Sharing_Or_How_to_Cope_With_Perpetual_Leakage/links/02e7e52e0ecf4dbae1000000/Proactive-Secret-Sharing-Or-How-to-Cope-With-Perpetual-Leakage.pdf) allows for secret shares to be periodically refreshed, however, this still doesn’t meet the requirement, as it does not account for committee changes. Thus, we require a dynamic committee proactive secret sharing scheme. We intend to use the scheme detailed [here](https://eprint.iacr.org/2022/971.pdf), which relies on a bivariate polynomial in order to build new keys for the next committee. We will perform additional research into the feasibility of replacing the paillier encryption used in the paper above with el gamal encryption instead, as it is also a homomorphic encryption scheme but boasts somewhat better performance (see [here](https://arxiv.org/pdf/2202.02960.pdf)).
 
 By properly handling the handoff of keys to upcoming committees, we can ensure that the membership of the validator set can be made dynamic while also preserving the security of the system.
 
@@ -51,7 +51,7 @@ In addition, we will revisit the [timelock encryption](https://ideal-lab5.github
 
 #### Delayed Transactions
 
-There are several mechanisms in place in substrate/polkadot to delay transaction execution, for example with the existing [scheduler pallet](https://github.com/paritytech/substrate/blob/master/frame/scheduler/src/lib.rs), prototypes on a [delayed xcm queue](https://forum.polkadot.network/t/deferred-execution-of-xcmp-messages/2513), and of course the [time-delay proxy](https://wiki.polkadot.network/docs/learn-proxies#time-delayed-proxy), but each solution is vulnerable to front-running attacks, among other implications of ‘knowing the future’. We propose to secure this process with timelock encryption, ensuring that transactions can remain encrypted until a scheduled future block. Apart from front-running protections, this also enables the development of trustless, atomic MPC protocols within smart contracts, a.k.a. MPC-as-a-Service. That is, contracts which allow multiple parties to commit to a protocol without revealing their input, and for that protocol to complete with no further interaction from the participants. In addition, delayed transactions done this way can add secure, decentralized escrow capabilities, for example by transferring a balance to a pure proxy and scheduling a timelocked encryption to add another address (recipient of the balance) and remove yourself (sender of the balance), while the transfer could still be stopped at any time prior to execution.
+There are several mechanisms in place in substrate/polkadot to delay transaction execution, for example with the [scheduler pallet](https://github.com/paritytech/substrate/blob/master/frame/scheduler/src/lib.rs), prototypes on a [delayed xcm queue](https://forum.polkadot.network/t/deferred-execution-of-xcmp-messages/2513), and of course the [time-delay proxy](https://wiki.polkadot.network/docs/learn-proxies#time-delayed-proxy), but each solution is vulnerable to front-running attacks, among other implications of ‘knowing the future’. We propose to secure this process with timelock encryption, ensuring that transactions can remain encrypted until a scheduled future block. Apart from front-running protections, this also enables the development of trustless, atomic MPC protocols within smart contracts, a.k.a. MPC-as-a-Service. That is, contracts which allow multiple parties to commit to a protocol without revealing their input, and for that protocol to complete with no further interaction from the participants. In addition, delayed transactions done this way can add secure, decentralized escrow capabilities, for example by transferring a balance to a pure proxy and scheduling a timelocked encryption to add another address (recipient of the balance) and remove yourself (sender of the balance), while the transfer could still be stopped at any time prior to execution.
 
 
 ##### Overview + Design
@@ -60,24 +60,24 @@ The general idea is that we will modify the scheduler pallet so that it can perf
 
 ##### Implementation
 
-The implementation will work by first modifying the scheduler pallet to incorporate IBE decryption and verify the hash of the transaction within the `on_initialize` hook prior to verifying and dispatching the runtime call. We also create the new ‘Future’ proxy type and ensure that only future proxies can submit timelocked transactions. Secondly, we will update the etf.js library to provide utilities for preparing wrapped proxy calls, managing proxy and child accounts (i.e. to easily set yourself as the future proxy of specific children and a utility to ensure invalid transactions are not proposed (i.e. prevent nonce-invalidity and prompt new account soft-derivation)), and to manage scheduled transactions from a browser. 
+The implementation will work by first modifying the scheduler pallet to incorporate IBE decryption and verify the hash of the transaction within the `on_initialize` hook prior to verifying and dispatching the runtime call. We also create the new ‘Future’ proxy type and ensure that only future proxies can submit timelocked transactions. Secondly, we will update the etf.js library to provide utilities for preparing wrapped proxy calls, managing proxy and child accounts (i.e. to easily set yourself as the future proxy of specific children and a utility to ensure invalid transactions are not proposed (i.e. prevent nonce invalidity errors and prompt new account soft-derivation)), and to manage scheduled transactions from a browser. We will create a modified version of the scheduler pallet to be able to schedule, cancel, and replace timelocked transactions.
 
 The diagram below depicts the general flow, where Alice, as a future proxy to Alice/0, signs Alice/0’s runtime call which will be executed by the scheduler at a future block k.
 
 ![delay-tx](https://raw.githubusercontent.com/ideal-lab5/Grants-Program/etf_network/static/img/delay_tx.png)
 
-We will modify the scheduler pallet to be able to schedule, cancel, and replace timelocked transactions.
+
 
 #### Timelock Auction Version 2: using timelocked transactions
 
-In our previous grant we developed a timelock auction (https://auction.idealabs.network) which uses timelock encryption to seal bids for a future deadline. Post-deadline, the contract allows a ‘complete’ function to be called, which requires that ciphertexts (sealed bids) be decrypted offchain, then supplied to the contract (where the data is hashed and verified against original commitments). This style of auction works, but it is not ideal as it first requires offchain computation in order to complete the auction, and secondly it either requires  that each participant calls the complete function, or else that they have a degree of trust that another participant called it with their unsealed bid. For more detailed information, see the docs [here](https://ideal-lab5.github.io/timelock_auction.html).
+In our previous grant we developed a timelock auction (https://auction.idealabs.network) which uses timelock encryption to seal bids for a future deadline. After the auction's deadline, the contract allows a ‘complete’ function to be called, which requires that ciphertexts (sealed bids) be decrypted offchain, then supplied to the contract (where the data is hashed and verified against original commitments). This is not ideal, as it first requires offchain computation in order to complete the auction, and secondly it either requires  that each participant calls the complete function, or else that they have a degree of trust that another participant called it with their unsealed bid. For more detailed information, see the docs [here](https://ideal-lab5.github.io/timelock_auction.html).
 
-By introducing delayed transactions to the auction, we can make the process more secure, efficient, and non-interactive. By using delayed transactions as described above, we no longer need to perform the commit-reveal style interaction that is currently in place. Instead, participants only need to schedule a single transaction onchain and wait until the scheduled transactions are executed (at the ‘deadline’ block), after which payouts can immediately be claimed from the contract with no specific input from any other participants. That is, by performing the IBE decryption in the on_initilaize hook of the scheduler pallet, we no longer require the COMPLETE function that exists in version one of the contract.
+By introducing delayed transactions to the auction, we can make the process require less trust and to be non-interactive. By using delayed transactions as described above, we no longer need to perform the commit-reveal style interaction that is currently in place. Instead, participants only need to schedule a single transaction onchain and wait until the scheduled transactions are executed (at the ‘deadline’ block), after which payouts can immediately be claimed from the contract with no specific input from any other participants. That is, by performing the IBE decryption in the on_initilaize hook of the scheduler pallet, we no longer require the COMPLETE function that exists in version one of the contract.
 
+To elaborate, the auction contract we built has two functions, BID and COMPLETE, as mentioned above. In version 1 of the contract, BID accepts a timelocked ‘bid’, which should decrypt to a bid amount, whereas COMPLETE expects the revealed, decrypted value (which it verifies by checking the hash). Above the auction is an orchestrator contract, which proxies calls to the auction (so all interaction is actually through the orchestrator). After an auction is finished, the orchestrator allows a CLAIM function to be called to claim a payout. To make this non-interactive with delayed transactions, this would look like preparing a wrapped, proxied transaction to call the BID function of the contract, passing a bid amount b. That is, Alice, acting as a future proxy for Alice/0, prepares a transaction like TX = (proxy.proxy(proxyAcct = Alice, acct = Alice/0, nonce = Alice/0.nonce + 1, BID(b))), then encrypts it for a future slot and schedules the transaction using the scheduler pallet. After the transaction is executed, the CLAIM function of the orchestrator can be invoked, with no need to “Complete” the auction.
 
 ![](https://raw.githubusercontent.com/ideal-lab5/Grants-Program/etf_network/static/img/auction_v2.png)
 
-The auction contract we built has two functions, BID and COMPLETE, as mentioned above. In version 1 of the contract, BID accepts a timelocked ‘bid’, which should decrypt to a bid amount, whereas COMPLETE expects the revealed, decrypted value (which it verifies by checking the hash). Above the auction is an orchestrator contract, which proxies calls to the auction (so all interaction is actually through the orchestrator). After an auction is finished, the orchestrator allows a CLAIM function to be called to claim a payout. To make this non-interactive with delayed transactions, this would look like preparing a wrapped, proxied transaction to call the BID function of the contract, passing a bid amount b. That is, Alice, acting as a future proxy for Alice/0, prepares a transaction like TX = (proxy.proxy(proxyAcct = Alice, acct = Alice/0, nonce = Alice/0.nonce + 1, BID(b))), then encrypts it for a future slot and schedules the transaction using the scheduler pallet. After the transaction is executed, the CLAIM function of the orchestrator can be invoked, with no need to “Complete” the auction.
  
 #### Delayed Transaction Manager
 
@@ -108,15 +108,15 @@ The explorer module will allow visualization of scheduled transactions and provi
 
 - Where and how does your project fit into the ecosystem?
 
-ETF Network is a substrate-based chain, with most of our tools being dependent on tools built by parity and others in the community (e.g. heavy usage of polkadotjs, smoldot, substrate-connect). Beyond being a substrate-based chain, we aim to become a parachain and provide the capability to use our delayed transactions framework from any chain. 
+ETF Network is a substrate-based chain, with most of our tools being dependent on tools built by parity and others in the community (e.g. heavy usage of polkadotjs, smoldot, substrate-connect). Beyond being a substrate-based chain, we aim to become a parachain and provide the capability to delay transactions from any other parachain. 
 
 - Who is your target audience (parachain/dapp/wallet/UI developers, designers, your own user base, some dapp's userbase, yourself)?
 	
-Our target audience is very wide ranging. At this stage, our target audience includes developers and designers who may want to incorporate timelock encryption into their applications. As we strive to eventually provide delayed transaction capabilities in a cross-chain way (with XCM), our target audience also includes other parachains, and developers on other chains who would want to use delayed transactions.
+At this stage, our target audience includes developers and designers who may want to incorporate timelock encryption into their applications. As we strive to eventually provide delayed transaction capabilities in a cross-chain way (with XCM), our target audience also includes other parachains, and developers on other chains who would want to use delayed transactions.
 
 - What need(s) does your project meet?
 
-ETF Network enables publicly verifiable randomness and timelock encryption, which allows us to develop the delayed transactions mechanism. This solves several problems that exist in web3 systems, most notably front-running, by allowing scheduled transactions to remain secret until desired. Additionally, our approach means that this process is non-interactive, meaning it allows for non-interactive MPC protocols to be implemented in smart contracts.
+ETF Network enables timelock encryption, which allows us to develop the delayed transactions mechanism and ultimately act as an MPC-as-a-Service layer. This solves several problems that exist in web3 systems, most notably front-running, by allowing scheduled transactions to remain secret until desired.
 
 - Are there any other projects similar to yours in the Substrate / Polkadot / Kusama ecosystem?
 
@@ -253,8 +253,8 @@ Goal: We prepare our chain to be cumulus compatible and become a parachain on ro
 | -----: | ----------- | ------------- |
 | 1. | Cumulus Compatibility | We make our node compatible with cumulus |
 | 2. | Acquire testnet slot + Deploy to Rococo | We acquire a testnet slot and become a parachain on rococo. |
-| 3. | Monitoring and Telemetry | We monitor the testnet for performance and any other issues that arise during execution. |
-| 4. | Deploy Auction | deploy the auction v2 to our network on rococo |
+| 3. | Monitoring and Telemetry | We monitor the testnet for performance and any other issues that arise during execution. We also enhance our existing telemetry (prometheus, grafana) to more closely monitor the network. |
+| 4. | Deploy Auction | We deploy the auction v2 to our network on rococo. We will also implement some type of public faucet to allow users to easily participate in auctions. |
 
 ### Milestone 4: Delayed Tx Manager
 
@@ -275,17 +275,18 @@ Goal: Dapp for scheduling and monitoring delayed transactions. The product will 
 ## Future Plans
 
 In general, we plan to:
-- Security audit should be performed
-- Complete a whitepaper which details the design
+- Perform a security audit and address findings
+- Complete a whitepaper which details the design (already drafted, WIP)
 - We aim to deploy to kusama and become a parachain
 
 In the next phase of the project, we intend to:  
 - enable x-chain delayed transaction capabilities
-- more generally, to be an MPC-as-a-service tool 
+- more generally, to provide "MPC-as-a-Service" across chains
 
 ## Additional Information :heavy_plus_sign:
 
-This proposal is a continuation of our first ETF Network [grant](https://github.com/w3f/Grants-Program/blob/master/applications/cryptex.md), as 'cryptex' (that name is copyrighted in the US). Furthermore, Ideal Labs and the ETF Network project was recently accepted as part of the SBP program. 
+- This proposal is a continuation of our first ETF Network [grant](https://github.com/w3f/Grants-Program/blob/master/applications/cryptex.md), as 'cryptex' (that name is copyrighted in the US). Furthermore, Ideal Labs and the ETF Network project was recently accepted as part of the SBP program.
+- We can provide more mathematical details on request.
 
 
 
