@@ -1,7 +1,7 @@
  # ETF Network
 
 - **Team Name:** Ideal Labs
-- **Payment Address:** 0x2CDA3C7D6e21Cc4f43C170c0dFf2e9F3B3B5E889 (USDT)
+- **Payment Address:** 0x2CDA3C7D6e21Cc4f43C170c0dFf2e9F3B3B5E889 (USDC)
 - **[Level](https://github.com/w3f/Grants-Program/tree/master#level_slider-levels):** 3
 
 ## Project Overview :page_facing_up:
@@ -220,7 +220,7 @@ Goal: To implement a direct proof of stake version of our consensus mechanism us
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
-| 1. | Implement DPSS | We implement a dynamic committee proactive secret sharing scheme. This will be an open source implementation based on [this paper](https://eprint.iacr.org/2022/971.pdf). We implement this using Arkworks, and will experiemtn with replacing the paillier encryption + ZKP construction with el gamal + DLEQ proofs. We do this as part of the etf-crypto-primtives code base, which is part of the etf-sdk. |
+| 1. | Implement DPSS | We implement a dynamic committee proactive secret sharing scheme. This will be an open source implementation based on [this paper](https://eprint.iacr.org/2022/971.pdf). We implement this using Arkworks, and will experiement with replacing the paillier encryption + ZKP construction with el gamal + DLEQ proofs. We do this as part of the etf-crypto-primtives code base, which is part of the etf-sdk. |
 | 2. | Substrate module: Babe integration | We integrate the DPSS scheme into Babe in order to perform a handoff of keys to new committees (authority sets) as epochs change. |
 | 3. | ETF-SDK Timelock encryption | We update our timelock encryption scheme to account for the change as part of (1) and (2). Here, we need to ensure the correct public keys are used when encrypting messages. |
 | 4. | Substrate TEE | We ensure that validator nodes must run in a TEE. We do this to ensure the confidentiality of the generation of secret shares. |
