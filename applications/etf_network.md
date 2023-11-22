@@ -82,10 +82,14 @@ graph TD;
 
 ```mermaid
 graph LR;
-   A[prepare CALLS 
-   and encrypt for slots]-->B[construct Merkle clock];
-   B-->C[Broadcast clock nodes
-      and signature];
+   A-->B;
+   B-->C;
+```
+
+```mermaid
+graph LR;
+   A[prepare CALLS and encrypt for slots]-->B[construct Merkle clock];
+   B-->C[Broadcast clock nodes and signature];
 ```
 
 and when syncing clock nodes received from peers:
