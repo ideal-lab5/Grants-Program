@@ -242,6 +242,18 @@ The explorer module will allow visualization of scheduled transactions and provi
 - Monitor the execution of scheduled transactions, and chains of transactions through a visual interface.
 - Stretch: Subscribe to get notifications about status changes on specific scheduled transactions.
 
+Below, we present the timelock auction version 2:
+
+### Timelock Auction Version 2: using timelocked transactions
+
+In our previous grant we developed a timelock auction (https://auction.idealabs.network) which uses timelock encryption to seal bids for a future deadline. After the auction's deadline, the contract allows a ‘complete’ function to be called, which requires that ciphertexts (sealed bids) be decrypted offchain, then supplied to the contract (where the data is hashed and verified against original commitments). This is not ideal, as it first requires offchain computation in order to complete the auction, and secondly it either requires  that each participant calls the complete function, or else that they have a degree of trust that another participant called it with their unsealed bid. For more detailed information, see the docs [here](https://ideal-lab5.github.io/timelock_auction.html).
+
+By introducing delayed transactions to the auction, we can make the process require less trust and to be non-interactive. By using delayed transactions as described above, we no longer need to perform the commit-reveal style interaction that is currently in place. Instead, participants only need to schedule a single transaction onchain and wait until the scheduled transactions are executed (at the ‘deadline’ block), after which payouts can immediately be claimed from the contract with no specific input from any other participants. That is, by performing the IBE decryption in the on_initilaize hook of the scheduler pallet, we no longer require the COMPLETE function that exists in version one of the contract.
+
+To elaborate, the auction contract we built has two functions, BID and COMPLETE, as mentioned above. In version 1 of the contract, BID accepts a timelocked ‘bid’, which should decrypt to a bid amount, whereas COMPLETE expects the revealed, decrypted value (which it verifies by checking the hash). Above the auction is an orchestrator contract, which proxies calls to the auction (so all interaction is actually through the orchestrator). After an auction is finished, the orchestrator allows a CLAIM function to be called to claim a payout. To make this non-interactive with delayed transactions, this would look like preparing a wrapped, proxied transaction to call the BID function of the contract, passing a bid amount b. That is, Alice, acting as a future proxy for Alice/0, prepares a transaction like TX = (proxy.proxy(proxyAcct = Alice, acct = Alice/0, nonce = Alice/0.nonce + 1, BID(b))), then encrypts it for a future slot and schedules the transaction using the scheduler pallet. After the transaction is executed, the CLAIM function of the orchestrator can be invoked, with no need to “Complete” the auction.
+
+![](https://raw.githubusercontent.com/ideal-lab5/Grants-Program/etf_network/static/img/auction_v2.png)
+
 ### Ecosystem Fit
 
 - Where and how does your project fit into the ecosystem?
@@ -407,7 +419,7 @@ Goal: We build a dapp for scheduling and monitoring delayed transactions. The pr
 | **0d.** | Docker (1 day) | We will provide a Dockerfile of the delayed tx manager which allows for easy deployments and local testing. |
 | **0e.** | Article (2 days) | We will publish a substack article detailing the deliverables, accomplishments, and obstacles encountered during the implementation of this milestone. |
 | **1.** | Scheduler UI (2 weeks) | We develop a visual tool for defining a chain of delayed transactions. This component builds transactions using the txwrapper-etf, encrypts messages with the etf.js encryption functions, and signs transactions using polkadotjs. |
-| **2.** | Explorer UI (2 weeks) | We build a user interface to monitor the status of scheduled transactions and to access execution details. This interface will heavily rely on events emitted by the network. In addition, we explore the usage of tools such as Subquery to enhance and streamline this experience. |
+| **2.** | Explorer UI (2 weeks) | We build a user interface to monitor the status of scheduled transactions and to access execution details. This interface will heavily rely on events emitted by the network. In addition, we explore the usage of too    ls such as Subquery to enhance and streamline this experience. |
 | **3.** | Timelock Auction V2 (3 weeks) | We update our timelock auction delivered in the previous grant to use delayed transactions instead of timelocked bids. In addition, we demonstrate how participants can bid in auction and monitor the outcome through the delayed transaction manager. |
 
 Note: We intend to host the UI on IPFS and also on Vercel to ensure decentralization of the application. Specifically, we will host our build on IPFS Infura.
@@ -424,22 +436,7 @@ In general, we plan to:
 In the next phase of the project, we intend to:  
 - enable x-chain delayed transaction capabilities
 - more generally, to provide "MPC-as-a-Service" across chains
-- build the next version of the timelock auction
 - explore scalability solutions
-
-
-Below, we present the timelock auction version 2:
-
-### Timelock Auction Version 2: using timelocked transactions
-
-In our previous grant we developed a timelock auction (https://auction.idealabs.network) which uses timelock encryption to seal bids for a future deadline. After the auction's deadline, the contract allows a ‘complete’ function to be called, which requires that ciphertexts (sealed bids) be decrypted offchain, then supplied to the contract (where the data is hashed and verified against original commitments). This is not ideal, as it first requires offchain computation in order to complete the auction, and secondly it either requires  that each participant calls the complete function, or else that they have a degree of trust that another participant called it with their unsealed bid. For more detailed information, see the docs [here](https://ideal-lab5.github.io/timelock_auction.html).
-
-By introducing delayed transactions to the auction, we can make the process require less trust and to be non-interactive. By using delayed transactions as described above, we no longer need to perform the commit-reveal style interaction that is currently in place. Instead, participants only need to schedule a single transaction onchain and wait until the scheduled transactions are executed (at the ‘deadline’ block), after which payouts can immediately be claimed from the contract with no specific input from any other participants. That is, by performing the IBE decryption in the on_initilaize hook of the scheduler pallet, we no longer require the COMPLETE function that exists in version one of the contract.
-
-To elaborate, the auction contract we built has two functions, BID and COMPLETE, as mentioned above. In version 1 of the contract, BID accepts a timelocked ‘bid’, which should decrypt to a bid amount, whereas COMPLETE expects the revealed, decrypted value (which it verifies by checking the hash). Above the auction is an orchestrator contract, which proxies calls to the auction (so all interaction is actually through the orchestrator). After an auction is finished, the orchestrator allows a CLAIM function to be called to claim a payout. To make this non-interactive with delayed transactions, this would look like preparing a wrapped, proxied transaction to call the BID function of the contract, passing a bid amount b. That is, Alice, acting as a future proxy for Alice/0, prepares a transaction like TX = (proxy.proxy(proxyAcct = Alice, acct = Alice/0, nonce = Alice/0.nonce + 1, BID(b))), then encrypts it for a future slot and schedules the transaction using the scheduler pallet. After the transaction is executed, the CLAIM function of the orchestrator can be invoked, with no need to “Complete” the auction.
-
-![](https://raw.githubusercontent.com/ideal-lab5/Grants-Program/etf_network/static/img/auction_v2.png)
-
 
 ## Additional Information :heavy_plus_sign:
 
