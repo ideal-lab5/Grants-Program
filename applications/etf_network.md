@@ -212,17 +212,6 @@ There are three large pieces of the implementation:
    - this is mostly validator-only functionality, including block production and block import as outlined above
    - we will build this on top of our existing consensus modules, etf-aura
    - pruning will occur in much the same way as it would normally, but subject to extra checks (to account for change in ordering)
-
-#### Timelock Auction Version 2: using timelocked transactions
-
-In our previous grant we developed a timelock auction (https://auction.idealabs.network) which uses timelock encryption to seal bids for a future deadline. After the auction's deadline, the contract allows a ‘complete’ function to be called, which requires that ciphertexts (sealed bids) be decrypted offchain, then supplied to the contract (where the data is hashed and verified against original commitments). This is not ideal, as it first requires offchain computation in order to complete the auction, and secondly it either requires  that each participant calls the complete function, or else that they have a degree of trust that another participant called it with their unsealed bid. For more detailed information, see the docs [here](https://ideal-lab5.github.io/timelock_auction.html).
-
-By introducing delayed transactions to the auction, we can make the process require less trust and to be non-interactive. By using delayed transactions as described above, we no longer need to perform the commit-reveal style interaction that is currently in place. Instead, participants only need to schedule a single transaction onchain and wait until the scheduled transactions are executed (at the ‘deadline’ block), after which payouts can immediately be claimed from the contract with no specific input from any other participants. That is, by performing the IBE decryption in the on_initilaize hook of the scheduler pallet, we no longer require the COMPLETE function that exists in version one of the contract.
-
-To elaborate, the auction contract we built has two functions, BID and COMPLETE, as mentioned above. In version 1 of the contract, BID accepts a timelocked ‘bid’, which should decrypt to a bid amount, whereas COMPLETE expects the revealed, decrypted value (which it verifies by checking the hash). Above the auction is an orchestrator contract, which proxies calls to the auction (so all interaction is actually through the orchestrator). After an auction is finished, the orchestrator allows a CLAIM function to be called to claim a payout. To make this non-interactive with delayed transactions, this would look like preparing a wrapped, proxied transaction to call the BID function of the contract, passing a bid amount b. That is, Alice, acting as a future proxy for Alice/0, prepares a transaction like TX = (proxy.proxy(proxyAcct = Alice, acct = Alice/0, nonce = Alice/0.nonce + 1, BID(b))), then encrypts it for a future slot and schedules the transaction using the scheduler pallet. After the transaction is executed, the CLAIM function of the orchestrator can be invoked, with no need to “Complete” the auction.
-
-![](https://raw.githubusercontent.com/ideal-lab5/Grants-Program/etf_network/static/img/auction_v2.png)
-
  
 #### Delayed Transaction Manager
 
@@ -432,6 +421,18 @@ In general, we plan to:
 In the next phase of the project, we intend to:  
 - enable x-chain delayed transaction capabilities
 - more generally, to provide "MPC-as-a-Service" across chains
+
+
+### Timelock Auction Version 2: using timelocked transactions
+
+In our previous grant we developed a timelock auction (https://auction.idealabs.network) which uses timelock encryption to seal bids for a future deadline. After the auction's deadline, the contract allows a ‘complete’ function to be called, which requires that ciphertexts (sealed bids) be decrypted offchain, then supplied to the contract (where the data is hashed and verified against original commitments). This is not ideal, as it first requires offchain computation in order to complete the auction, and secondly it either requires  that each participant calls the complete function, or else that they have a degree of trust that another participant called it with their unsealed bid. For more detailed information, see the docs [here](https://ideal-lab5.github.io/timelock_auction.html).
+
+By introducing delayed transactions to the auction, we can make the process require less trust and to be non-interactive. By using delayed transactions as described above, we no longer need to perform the commit-reveal style interaction that is currently in place. Instead, participants only need to schedule a single transaction onchain and wait until the scheduled transactions are executed (at the ‘deadline’ block), after which payouts can immediately be claimed from the contract with no specific input from any other participants. That is, by performing the IBE decryption in the on_initilaize hook of the scheduler pallet, we no longer require the COMPLETE function that exists in version one of the contract.
+
+To elaborate, the auction contract we built has two functions, BID and COMPLETE, as mentioned above. In version 1 of the contract, BID accepts a timelocked ‘bid’, which should decrypt to a bid amount, whereas COMPLETE expects the revealed, decrypted value (which it verifies by checking the hash). Above the auction is an orchestrator contract, which proxies calls to the auction (so all interaction is actually through the orchestrator). After an auction is finished, the orchestrator allows a CLAIM function to be called to claim a payout. To make this non-interactive with delayed transactions, this would look like preparing a wrapped, proxied transaction to call the BID function of the contract, passing a bid amount b. That is, Alice, acting as a future proxy for Alice/0, prepares a transaction like TX = (proxy.proxy(proxyAcct = Alice, acct = Alice/0, nonce = Alice/0.nonce + 1, BID(b))), then encrypts it for a future slot and schedules the transaction using the scheduler pallet. After the transaction is executed, the CLAIM function of the orchestrator can be invoked, with no need to “Complete” the auction.
+
+![](https://raw.githubusercontent.com/ideal-lab5/Grants-Program/etf_network/static/img/auction_v2.png)
+
 
 ## Additional Information :heavy_plus_sign:
 
