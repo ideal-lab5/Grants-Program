@@ -19,10 +19,11 @@ The ETF Network (“encryption to the future”) is a substrate-based blockchain
 The network uses identity-based encryption and DLEQ proofs to implement a “proof-of-extract” consensus mechanism, wherein validators leak IBE secret keys with each block produced. In our initial grant, we delivered a proof of authority version of our consensus mechanism, along with rust and typescript libraries for enabling timelock encryption in standalone libraries and in the browser, along with a proof-of-concept auction application. 
 
 In this followup grant:
+
 1. We aim to ensure the security and scalability of the network by implementing a `dynamic-committee proactive secret sharing` to safely add and remove validators from the network.
 2. We develop a `timelocked-transaction pool` based on Merkle clocks and implement custom transaction validation logic, allowing for the construction of a timelock-encrypted 'parallel future state'.
 3. We revamp the rust and javascript SDKs built during the previous milestone to include tools to build and verify timelocked transactions offchain.
-4. We will also develop browser-based tools (etf.js and a transaction manager dapp) that allows users to easily construct, manage, and monitor delayed transactions (i.e. Merkle clocks). We will also revisit the sealed bid auction developed in our previous grant, using delayed transactions rather than timelocked bids. As a result, this demonstrates the ability to participate in non-interactive, trustless MPC protocols via smart contracts, or rather, for enabling MPC-as-a-Service. We will also need to deploy contracts using delayed transactions.
+4. We will also develop browser-based tools (etf.js and a transaction manager dapp) that allows users to easily construct, manage, and monitor delayed transactions (i.e. Merkle clocks).
 
 ### Project Details
 
@@ -32,7 +33,7 @@ In this followup grant:
 
 We may require that the network’s authority set (committee) be dynamic, where authority membership can change, or where authorities may become unreachable or be banned from the network. In the initial version of our consensus mechanism, all authorities are also IBE master key custodians, each having complete knowledge of the IBE master secret, making it very difficult to securely modify the authority set of the network without a large degree of centralization since we would need to distribute the master key. 
 
-A verifiable secret sharing scheme (such as that used by [drand](https://drand.love/docs/cryptography/#verifiable-secret-sharing)) allows for secret shares to be publicly verified, however, it does not support a dynamic committee (drand has a static set of nodes, the League of Entropy). In order to realize this, we need to distribute the secret key in a way that allows outgoing committees (validator sets) to produce shares for incoming committees. A [proactive secret sharing scheme](https://www.researchgate.net/profile/Amir-Herzberg/publication/221355399_Proactive_Secret_Sharing_Or_How_to_Cope_With_Perpetual_Leakage/links/02e7e52e0ecf4dbae1000000/Proactive-Secret-Sharing-Or-How-to-Cope-With-Perpetual-Leakage.pdf) allows for secret shares to be periodically refreshed, however, this still doesn’t meet the requirement, as it does not account for committee changes. Thus, we require a dynamic committee proactive secret sharing scheme. We intend to use the scheme detailed [here](https://eprint.iacr.org/2022/971.pdf), which relies on a bivariate polynomial in order to build new keys for the next committee. We will perform additional research into the feasibility of replacing the paillier encryption used in the paper above with el gamal encryption instead, as it is also a homomorphic encryption scheme but boasts somewhat better performance (see [here](https://arxiv.org/pdf/2202.02960.pdf)).
+A verifiable secret sharing scheme (such as that used by [drand](https://drand.love/docs/cryptography/#verifiable-secret-sharing)) allows for secret shares to be publicly verified, however, it does not support a dynamic committee (drand has a static set of nodes, called the "League of Entropy"). In order to realize this, we need to distribute the secret key in a way that allows outgoing committees (validator sets) to produce shares for incoming committees. A [proactive secret sharing scheme](https://www.researchgate.net/profile/Amir-Herzberg/publication/221355399_Proactive_Secret_Sharing_Or_How_to_Cope_With_Perpetual_Leakage/links/02e7e52e0ecf4dbae1000000/Proactive-Secret-Sharing-Or-How-to-Cope-With-Perpetual-Leakage.pdf) allows for secret shares to be periodically refreshed, however, this still doesn’t meet the requirement, as it does not account for committee changes. Thus, we require a dynamic committee proactive secret sharing scheme. We intend to use the scheme detailed [here](https://eprint.iacr.org/2022/971.pdf), which relies on a bivariate polynomial in order to build new keys for the next committee. We will perform additional research into the feasibility of replacing the paillier encryption used in the paper above with el gamal encryption instead, as it is also a homomorphic encryption scheme but boasts somewhat better performance (see [here](https://arxiv.org/pdf/2202.02960.pdf)).
 
 By properly handling the handoff of keys to upcoming committees, we can ensure that the membership of the validator set can be made dynamic while also preserving the security of the system.
 
@@ -60,7 +61,7 @@ In order to solve this problem, we will replace nonce validation completely thro
 Essentially, each account will be able to submit 'delayed transactions' by first defining their 'schedule' as a merkle clock, which is then merged with other clocks to build a global *total* ordering of future events (transactions). By attaching auxiliary information (or weights) to each clock-node we can obtain a global total ordering of future events to be executed. That is, each event in the merkle clock corresponds to the some signed transaction. Validators will be responsible for decrypting, verifying, and applying these transactions. They can then prune the global merkle DAG to remove executed transactions (as they would normally do in a transaction pool).
 ##### Overview + Design
 
-A [Merkle-clock DAG](https://research.protocol.ai/publications/merkle-crdts-merkle-dags-meet-crdts/psaras2020.pdf) is a Merkle DAG based logical clock to represent causality information between events in a distributed system. Each node in the DAG represents an event and allows for the construction of a grow-only set of events in a distributed system. It provides a mechanism for defining a partial ordering of all events defined in the clock, and by merging with other clocks, we can produce a partial ordering of their union. Here, partial ordering means we can tell if an event `A` happened before, after, or during another event `B`. We can easily introduce total ordering to the merkle clock by including extra information related to an external clock against which the logical clock 'ticks'. Watch this youtube video from protocol labs [at the 18 minute mark](https://youtu.be/ukfrmBVrpo8?t=1078) to get a better idea of how a Merkle clock works. In general, the entire video will provide a significant amount of context beyond what we can provide in the scope of this proposal. The aim of this milestone is to build an onchain `Merkle Clock-as-a-Service` for timelocked transactions, which coupled with modified validator logic, enables for secure delayed transactions.
+A [Merkle-clock DAG](https://research.protocol.ai/publications/merkle-crdts-merkle-dags-meet-crdts/psaras2020.pdf) is a Merkle DAG based logical clock to represent causality information between events in a distributed system. Each node in the DAG represents an event and allows for the construction of a grow-only set of events in a distributed system. It provides a mechanism for defining a partial ordering of all events defined in the clock, and by merging with other clocks, we can produce a partial ordering of their union. Here, partial ordering means we can tell if an event `A` happened before, after, or during another event `B`. We can easily introduce total ordering to the merkle clock by including extra information related to an external clock against which the logical clock 'ticks'. Watch this youtube video from protocol labs [at the 18 minute mark](https://youtu.be/ukfrmBVrpo8?t=1078) to get a better idea of how a Merkle clock works. In general, the entire video will provide a significant amount of context beyond what we can provide in the scope of this proposal.
 
 ##### Merkle Clock-Based Transaction Pool
 
@@ -69,11 +70,11 @@ A transaction pool, coupled with nonces, is used to define a total global orderi
 - replay protection: timelocked transactions are encrypted for specific blocks, which ensure that they cannot be decrypted by secrets leaked in other blocks. Transaction signatures rely on the CID of the transaction, which ensures that it is 'in the DAG' already.
 - duplicate transaction submission: Duplicate transactions would have the same CID, and so we can easily validate if it is a duplicate
 
-In brief, we place the transaction pool by a Merkle clock. Each node has its own locally run Merkle clock that it syncs with its peers, in the same way as transactions are synced. The general flow for producing a chain of transactions is then:
+The general flow for producing a chain of transactions is then:
 
 ```mermaid
 graph LR;
-   A[prepare CALLS and encrypt for slots]-->B[construct Merkle clock];
+   A[prepare CALLS and encrypt for slots]-->B[construct Merkle clock nodes offchain];
    B-->C[Broadcast clock nodes and signature];
 ```
 
@@ -91,7 +92,7 @@ There is additional computational load on validators and increased storage requi
 
 **Timelock Encryption** 
 
-Brielf we want to discuss how the timelock encryption scheme works at a very high level. We can represent it with three algorithms:
+Briefly we want to discuss how the timelock encryption scheme works at a very high level. We can represent it with three algorithms:
 
 1. $(SK, nonce) \leftarrow Setup(1^\lambda)$ which gives us a random 128-bit secret key and 12-bit nonce (for AES-GCM).
 2. $(CT, capsule) \leftarrow Tlock.Enc(M, SK, nonce, t, \{ID_i\}_{i \in [n]})$ where $M \in \{0, 1\}^*$ is any message, and $(SK, nonce)$ are the output of the setup function. Each $ID_i$ is a unique slot identity and $t < n$ is some threshold of slot secrets required to recover $SK$.
@@ -99,7 +100,7 @@ Brielf we want to discuss how the timelock encryption scheme works at a very hig
 
 When convenient, we will just use $CT$ to represent the output of the encryption function.
 
-Now, we will describe the future transaction pool in detail.
+Now, we will describe the timelocked-transaction pool in detail.
 
 **Setup**
 
@@ -125,7 +126,7 @@ When receiving new clock nodes from peers:
 1. Verify that the received clock does not invalidate the existing clock. If signatures have been submitted for specific clock nodes, inserting any nodes prior would invalidate these signatures. We do not have an easy way to cancel delayed transactions once they have been added to the clock. This is a pretty big liminitation that we will solve in the future. 
 2. Merge the clocks and verify the CID matches an expected one (broadcast along with clock nodes just received)
 
-It should be clear that alongside the merkle clock we also require a store of signatures for the transactions (i.e. which are valid on the decrypted ciphertexts). This would look like a storage map to associated [CID -> SIGNATURE]
+It should be clear that alongside the merkle clock we also require a store of signatures for the transactions (i.e. which are valid on the decrypted ciphertexts). This would look like a storage map to associate: [CID -> SIGNATURE]
 
 Here is a visual example of what the merkle clock would look like for three transactions built on top of a 'genesis' event.
 
@@ -308,7 +309,6 @@ The intended repos for this project are (but possibly subject to name change):
 - https://github.com/ideal-lab5/etf
 - https://github.com/ideal-lab5/etf-sdk
 - https://github.com/ideal-lab5/etf.js
-- https://github.com/ideal-lab5/etf-auction-ui
 - https://github.com/ideal-lab5/contracts
 
 Please also provide the GitHub accounts of all team members. If they contain no activity, references to projects hosted elsewhere or live are also fine.
@@ -378,8 +378,8 @@ Goal: To implement the Merkle-clock based transaction pool, validator logic, and
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
 | **0a.** | License | GPLv3 |
-| **0b.** | Documentation (.5 weeks) | We will provide both **inline documentation** of the code and update our documentation at **etf.idealabs.network** to include the most up-to-date detailed, technical information regarding the implementation of delayed transactions, including detailed information on the modified scheduler pallet, future proxies, usage of the SDK, as well as a guide on how to participate in the Timelock Auction V2.0. |
-| **0c.** | Testing and Testing Guide (.5 weeks) | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In addition, we will perform benchmarks for the scheduler pallet and ensure proper weight for all new extrinsics. As before, we will use cargo tarpauling to ensure > 80% coverage on new code. In addition, we modify the existing ink! contract tests to account for changes to the contracts (mostly the 'orhestrator' contract). We will use jest in order to test the etf.js library and the timelock auction interface. We will attempt to perform tests using zombienet as well. |
+| **0b.** | Documentation (.5 weeks) | We will provide both **inline documentation** of the code and update our documentation at **etf.idealabs.network** to include the most up-to-date detailed, technical information regarding the implementation of delayed transactions. |
+| **0c.** | Testing and Testing Guide (.5 weeks) | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. We will perform benchmarks to gauge the performance of the new features in our consensus, estimating the change in computation and storage. As before, we will use cargo tarpauling to ensure > 80% coverage on new code. We will use jest in order to test the etf.js library. |
 | **0d.** | Docker (1 day) | We will provide a Dockerfile(s) for a node which allows for delayed transactions. |
 | **0e.** | Article (2 days) | We will publish a substack article detailing the deliverables, accomplishments, and obstacles encountered during the implementation of this milestone. |
 | **1.** | Substrate Module: Merkle-Clock Transaction Pool (2 weeks) | We implement a Merkle-Clock based transaction pool. As describe above, this relies on the provides/requries fields and adds a new field to represent clock weights. |
@@ -391,7 +391,7 @@ Total estimated weeks: at least 10 weeks capacity needed
 ### Milestone 3: Delayed Tx Manager
 
 - **Estimated Duration:** 4 weeks
-- **FTE:**  2.5 (capacity: 3 FTE * 4 weeks = 12 weeks total capacity)
+- **FTE:**  2.5 (10 weeks total, 8 weeks ~ 80%)
 - **Costs:** 20,000 USD
 
 Goal: We build a dapp for scheduling and monitoring delayed transactions. The product will provide a way of handling derivation of accounts and managing proxy status. Likely the delayed transactions manager will be a typescript application, likely a Next.js application though we have not committed to that specific framework yet. 
@@ -421,7 +421,11 @@ In general, we plan to:
 In the next phase of the project, we intend to:  
 - enable x-chain delayed transaction capabilities
 - more generally, to provide "MPC-as-a-Service" across chains
+- build the next version of the timelock auction
+- explore scalability solutions
 
+
+Below, we present the timelock auction version 2:
 
 ### Timelock Auction Version 2: using timelocked transactions
 
