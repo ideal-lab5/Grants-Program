@@ -258,7 +258,7 @@ As stated in the description of [delayed transactions](#delayed-transactions), t
 
 Not exactly. To the best of our knowledge, there are no projects that accomplish timelock encryption in the ecosystem. There are also no projects that allow for future transactions to be scheduled this way. To the best of my knowledge, I know of no other project that relies on a Merkle clock for transaction ordering, as opposed to nonces.
 
-The most similar project could be [Oak](https://oak.tech/), which allows transactions to be scheduled for future times, however, they do not use timelock encryption and they rely on an onchain scheduler to process transactions.
+The most similar project could be [Oak](https://oak.tech/), which allows transactions to be scheduled for future times, however, they do not use timelock encryption and they rely on an onchain scheduler to process transactions. Their whitepaper [in section 6.2](https://docs.oak.tech/papers/oak_whitepaper.pdf) even specifically mentions that the network is vulnerable front-running attacks, which our solution specifically prevents.
 
 Outside of the ecosystem, [drand](https://drand.love/) is the most similar project, which this proposal takes some inspiration from. Unlike drand, however, which relies on the “League of Entropy” nodes to produce randomness, we will rely on our consensus mechanism instead, as we don’t explicitly tout ourselves as a randomness beacon. There is also no mechanism to specifically delay transactions via drand, though this scheme could be modified to use drand instead of ETF Network. If ETF Network were used as a beacon, this would imply that delayed transaction layers could be implemented in other chains as well.
 
@@ -282,7 +282,7 @@ Additionally, the approach to delayed transactions takes inspiration from projec
 
 ### Legal Structure
 
-- **Registered Address:** 604 Fort Worth Ave, Dallas, Texas 75208 
+- **Registered Address:** 604 Fort Worth Ave, Dallas, Texas 75208, USA
 - **Registered Legal Entity:** Ideal Labs, LLC
 
 
@@ -334,7 +334,7 @@ In summary, the four milestones are:
 
 1. Implement DPSS and integrate into consensus
 2. Timelock Transaction Pool and Validation
-3. etf.js, ETF-SDK upgrades, timelock auction upgrades 
+3. etf.js, ETF-SDK upgrades
 4. Delayed transaction manager 
 
 
