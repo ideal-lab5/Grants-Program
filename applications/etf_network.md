@@ -150,10 +150,10 @@ graph TD;
    A--->C[CID: QmC..., payload: CT_C, slot_c, C: QmA...];
    C-->D[CID: QmD..., payload: CT_D, slot_d, C: QmB..., QmC...];
 
-   style B fill:#0000FF;
-   style C fill:#FF0000;
-   style D fill:#FF0000;
-   style E fill:#00FF00;
+   style B fill:#00FFBD;
+   style C fill:#9600d3;
+   style D fill:#9600d3;
+   style E fill:#d1c5cb;
 ```
 
 Clocks can only be merged if they are valid. That is, for any clock nodes, we must validate the AUX data associated with the node to ensure that 'later events' have slots that INCREASE within the AUX data. For example, look at the image above. There are three clocks being merged, the blue clock, $B = (n_b)$, the green one, $G = (n_e)$, and the red one $R = (n_c, n_d)$. Since each clock node in each clock is valid, where the AUX data increases with each event in the clock, the three clocks can be merged. It is then easy to see how this defines a global total ordering. The Merkle clock structure provides a partial order, and then by inspecting AUX data, we arrive at a total order, which is: $A => B => {E, C} => D$, where the ordering of $E$ and $C$ is somewhat arbitrary and left to the discretion of individual block producers.
