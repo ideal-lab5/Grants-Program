@@ -218,28 +218,29 @@ There are three large pieces of the implementation:
  
 #### Delayed Transaction Manager
 
-We will build a dapp to provide a cohesive user experience in which they can manage future proxy status and proxied accounts and to manage and monitor delayed transactions. We have not decided on a specific visualization yet, but have instead a well-defined list of requirements and interactions. We intend to amend this proposal prior to Milestone 4 to supply more in depth information regarding this piece. The transaction manager would play an important role in bringing visibility about the ETF Network activity, along with providing tools for orchestrating flows of chained delayed transactions (transactions that would be executed based on a predefined sequence).
+The delayed transaction manager is a set of tools and a user interface that enables users to:
 
-**Future Proxy Manager**
-The future proxy manager is the entrypoint to being able to use delayed transactions. It will incorporate tools to:
-- Allow account connections
-- Set an account as a future proxy
-- Set or remove an account as a proxy for child accounts
-- Soft-derive child accounts
+- prepare and submit delayed transactions
+- inspect the current chain state
+- monitor delayed transaction status
+
+Much of this functionality, such as the block explorer and preparing calls, will behave similarly to polkadotjs 'under the hood'. We also will investigate using some notification system to provide alerts on execution of delayed transactions. This will serve as a fundamental piece that allows end-users to interact with the system and prepare delayed transactions. 
+
+There are two major components, the `scheduler` and the `explorer`.
 
 **Scheduler UI**
-The scheduler module will allow users to construct transactions and/or chain of transactions through a visual interface. Users would be able to schedule transactions to be executed in the future, either independently or as part of a chain of transactions. A chain of transactions is a set of transactions that would be executed if one or more previous transactions stated as pre-requirements have been executed previously. It will incorporate tools to:
+The scheduler module will allow users to construct transactions and chains of transactions through a visual interface. Users would be able to schedule transactions to be executed in the future, either independently or as part of a chain of transactions. A chain of transactions is a valid merkle clock that other nodes agree to merge (i.e. valid calls chained together with provides/requires). It will incorporate tools to:
+
 - Construct, sign, encrypt, and schedule transactions for future blocks
-- Define chains of transactions.
-- Cancel or replace scheduled transactions
-- Warn on invalid nonces and prompt new child derivation
+- Define chains of calls/transactions
+- display fee estimation for future transactions
 
 **Explorer UI**
 The explorer module will allow visualization of scheduled transactions and provide options to get details during their lifecycle. It will incorporate tools to:
 - Query/Search scheduled transactions (past and future).
-- View detailed information on scheduled transactions, including which child account was used.
+- View detailed information on scheduled transactions
 - Monitor the execution of scheduled transactions, and chains of transactions through a visual interface.
-- Subscribe to get notifications about status changes on specific scheduled transactions.
+- Stretch: Subscribe to get notifications about status changes on specific scheduled transactions.
 
 ### Ecosystem Fit
 
@@ -405,9 +406,9 @@ Goal: We build a dapp for scheduling and monitoring delayed transactions. The pr
 | **0c.** | Testing and Testing Guide (.5 weeks) | We will test using the jest framework to ensure proper functionality of the dapp. We will also strive to use the jasmine testing framework to ensure e2e functionality of the application. |
 | **0d.** | Docker (1 day) | We will provide a Dockerfile of the delayed tx manager which allows for easy deployments and local testing. |
 | **0e.** | Article (2 days) | We will publish a substack article detailing the deliverables, accomplishments, and obstacles encountered during the implementation of this milestone. |
-| **1.** | Future Proxy Manager (2 weeks) | We implement a future proxy manager component as the initial piece. This component includes account derivation and  proxy management (set self as future) capabilities. This will rely on the proxy utilities developed in the etf.js library during milestone (2). |
-| **2.** | Scheduler UI (2 weeks) | We develop a visual tool for defining a chain of delayed transactions. This component builds transactions using the txwrapper-etf, encrypts messages with the etf.js encryption functions, and signs transactions using polkadotjs. |
-| **3.** | Explorer UI (2 weeks) | We build a user interface to monitor the status of scheduled transactions and to access execution details. This interface will heavily rely on events emitted by the network. In addition, we explore the usage of tools such as Subquery to enhance and streamline this experience. |
+| **1.** | Scheduler UI (2 weeks) | We develop a visual tool for defining a chain of delayed transactions. This component builds transactions using the txwrapper-etf, encrypts messages with the etf.js encryption functions, and signs transactions using polkadotjs. |
+| **2.** | Explorer UI (2 weeks) | We build a user interface to monitor the status of scheduled transactions and to access execution details. This interface will heavily rely on events emitted by the network. In addition, we explore the usage of tools such as Subquery to enhance and streamline this experience. |
+| **3.** | Timelock Auction V2 (3 weeks) | We update our timelock auction delivered in the previous grant to use delayed transactions instead of timelocked bids. In addition, we demonstrate how participants can bid in auction and monitor the outcome through the delayed transaction manager. |
 
 Note: We intend to host the UI on IPFS and also on Vercel to ensure decentralization of the application. Specifically, we will host our build on IPFS Infura.
 
