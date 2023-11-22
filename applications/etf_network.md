@@ -351,15 +351,15 @@ In summary, the four milestones are:
 
 ### Overview
 
-- **Total Estimated Duration:** 12 weeks
-- **Full-Time Equivalent (FTE):**  3
-- **Total Costs:** 85,000
+- **Total Estimated Duration:** 16 weeks
+- **Full-Time Equivalent (FTE):**  2.5
+- **Total Costs:** 70,000
 
 ### Milestone 1 — Upgrade Consensus with DPSS
 
 - **Estimated duration:** 5 weeks
-- **FTE:**  3
-- **Costs:** 23,000 USD
+- **FTE:**  2.5 (12.5 weeks total capacity, 10 weeks ~ 80%)
+- **Costs:** 25,000 USD (2.5 FTE @ 50 USD/hr)
 
 Goal: To implement a secure and dynamic version of our consensus mechanism using DPSS. This enhances the security and scalability of the system, ensuring proper randomness used when performing the IBE Extract step. This ensures that we can modify the validator set without requiring redistribution of the master IBE key.
 
@@ -374,49 +374,53 @@ Goal: To implement a secure and dynamic version of our consensus mechanism using
 | **1.** | Implement DPSS (2 weeks) | We implement a dynamic committee proactive secret sharing scheme using rust. This will be an open source implementation based on [this paper](https://eprint.iacr.org/2022/971.pdf). We implement this using Arkworks, and will experiement with replacing the paillier encryption + ZKP construction with el gamal + DLEQ proofs. We do this as part of the etf-crypto-primtives code base, which is part of the etf-sdk. We also perform benchmarking of our construction. We will also test performance of the implementation by running benchamrks (like with [hyperfine](https://github.com/sharkdp/hyperfine)). |
 | **2.** | Substrate module: ETF/Aura integration (2 weeks) | We integrate the DPSS scheme into the existing etf/aura implementation in order to perform a handoff of keys to new committees (authority sets) as epochs change. We also enable ETF consensus by modifying block author logic to calculate slot secrets and block import logic to verify the secrets. |
 | **3.** | ETF-SDK Timelock encryption (1 week) | We update our timelock encryption scheme to account for the change as part of (1) and (2). Here, we need to ensure the correct public keys are used when encrypting messages. |
-| **4.** | Substrate Moddule: TEE integration (2 weeks) | We modify block authoring logic to ensure that slot secrets are calculated in a TEE. We also revisit the DPSS scheme, specifically the setup phase where participants generate random polynomials, in order to perform this calculation within a TEE as well. |
+| **4.** | Substrate Module: TEE integration (2 weeks) | We modify block authoring logic to ensure that slot secrets are calculated in a TEE. We also revisit the DPSS scheme, specifically the setup phase where participants generate random polynomials, in order to perform this calculation within a TEE as well. |
+
+Total estimated weeks: 10 weeks capacity required
 
 ### Milestone 2 — Delayed Transactions
 
 - **Estimated Duration:** 5 weeks
-- **FTE:**  3
-- **Costs:** 23,000 USD
+- **FTE:**  2.5 (12.5 weeks total capacity, 10 weeks ~ 80%)
+- **Costs:** 25,000 USD (2.5 FTE @ 50 USD/hr)
 
 Goal: To implement the Merkle-clock based transaction pool, validator logic, and update the etf.js library to be able to add clock nodes (i.e. transactions).
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
 | **0a.** | License | GPLv3 |
-| **0b.** | Documentation | We will provide both **inline documentation** of the code and update our documentation at **etf.idealabs.network** to include the most up-to-date detailed, technical information regarding the implementation of delayed transactions, including detailed information on the modified scheduler pallet, future proxies, usage of the SDK, as well as a guide on how to participate in the Timelock Auction V2.0. |
-| **0c.** | Testing and Testing Guide | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In addition, we will perform benchmarks for the scheduler pallet and ensure proper weight for all new extrinsics. As before, we will use cargo tarpauling to ensure > 80% coverage on new code. In addition, we modify the existing ink! contract tests to account for changes to the contracts (mostly the 'orhestrator' contract). We will use jest in order to test the etf.js library and the timelock auction interface. We will attempt to perform tests using zombienet as well. |
-| **0d.** | Docker | We will provide a Dockerfile(s) for a node which allows for delayed transactions. |
-| **0e.** | Article | We will publish a substack article detailing the deliverables, accomplish, and issues encountered during the implementation of this milestone. |
-| **1.** | Substrate Module: Merkle-Clock Transaction Pool | We implement a Merkle-Clock based transaction pool. As describe above, this relies on the provides/requries fields and adds a new field to represent clock weights. |
-| **2.** | Substrate Module: Validator Execution | We modify validator logic to ensure that they can fetch proper merkle clock nodes, decrypt their payloads, and apply the transactions if valid. Additionally, block import logic will be modified to ensure that they can verify transactions against their own Merkle clocks. |
-| **3.** | ETF.js updates | We update the etf.js library to be able to submit "Merkle clock nodes" as opposed to transactions to the network. This includes building a tx-wrapper module (txwrapper-etf) in order to properly build runtime calls and the usage of our timelock encryption to encrypt transactions. |
+| **0b.** | Documentation (.5 weeks) | We will provide both **inline documentation** of the code and update our documentation at **etf.idealabs.network** to include the most up-to-date detailed, technical information regarding the implementation of delayed transactions, including detailed information on the modified scheduler pallet, future proxies, usage of the SDK, as well as a guide on how to participate in the Timelock Auction V2.0. |
+| **0c.** | Testing and Testing Guide (.5 weeks) | Core functions will be fully covered by comprehensive unit tests to ensure functionality and robustness. In addition, we will perform benchmarks for the scheduler pallet and ensure proper weight for all new extrinsics. As before, we will use cargo tarpauling to ensure > 80% coverage on new code. In addition, we modify the existing ink! contract tests to account for changes to the contracts (mostly the 'orhestrator' contract). We will use jest in order to test the etf.js library and the timelock auction interface. We will attempt to perform tests using zombienet as well. |
+| **0d.** | Docker (1 day) | We will provide a Dockerfile(s) for a node which allows for delayed transactions. |
+| **0e.** | Article (2 days) | We will publish a substack article detailing the deliverables, accomplishments, and obstacles encountered during the implementation of this milestone. |
+| **1.** | Substrate Module: Merkle-Clock Transaction Pool (2 weeks) | We implement a Merkle-Clock based transaction pool. As describe above, this relies on the provides/requries fields and adds a new field to represent clock weights. |
+| **2.** | Substrate Module: Validator Execution (2 weeks) | We modify validator logic to ensure that they can fetch proper merkle clock nodes, decrypt their payloads, and apply the transactions if valid. Additionally, block import logic will be modified to ensure that they can verify transactions against their own Merkle clocks. |
+| **3.** | ETF.js updates (2 weeks) | We update the etf.js library to be able to submit "Merkle clock nodes" as opposed to transactions to the network. This includes building a tx-wrapper module (txwrapper-etf) in order to properly build runtime calls and the usage of our timelock encryption to encrypt transactions. This will include development of a basic testbest/example to demonstrate the functionality. |
+
+Total estimated weeks: at least 10 weeks capacity needed
 
 ### Milestone 3: Delayed Tx Manager
 
 - **Estimated Duration:** 4 weeks
-- **FTE:**  3
-- **Costs:** 23,000 USD
+- **FTE:**  2.5 (capacity: 3 FTE * 4 weeks = 12 weeks total capacity)
+- **Costs:** 20,000 USD
 
 Goal: We build a dapp for scheduling and monitoring delayed transactions. The product will provide a way of handling derivation of accounts and managing proxy status. Likely the delayed transactions manager will be a typescript application, likely a Next.js application though we have not committed to that specific framework yet. 
 
 | Number | Deliverable | Specification |
 | -----: | ----------- | ------------- |
 | **0a.** | License | GPLv3 |
-| **0b.** | Documentation | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can use the delayed tx manager's features to manage proxy status and to use and monitor delayed transactions. We will deliver a comprehensive video demonstration which details all features of the dapp. |
-| **0c.** | Testing and Testing Guide | We will test using the jest framework to ensure proper functionality of the dapp. We will also strive to use the jasmine testing framework to ensure e2e functionality of the application. |
-| **0d.** | Docker | We will provide a Dockerfile of the delayed tx manager which allows for easy deployments and local testing. |
-| **0e.** | Article | We will publish a substack article detailing the deliverables, accomplish, and issues encountered during the implementation of this milestone. |
-| **1.** | Future Proxy Manager | We implement a future proxy manager component as the initial piece. This component includes account derivation and  proxy management (set self as future) capabilities. This will rely on the proxy utilities developed in the etf.js library during milestone (2). |
-| **2.** | Scheduler UI | We develop a visual tool for defining a chain of delayed transactions. This component builds transactions using the txwrapper-etf, encrypts messages with the etf.js encryption functions, and signs transactions using polkadotjs. |
-| **3.** | Explorer UI | We build a user interface to monitor the status of scheduled transactions and to access execution details. This interface will heavily rely on events emitted by the network. In addition, we explore the usage of tools such as Subquery to enhance and streamline this experience. |
-| **4.** | Timelock Auction Version 2 | We update our ink! auction contracts suite to use delayed transactions instead of timelocked bids, making it a non-interactive process. This will include updates to the auction 'orchestrator' and VickreyAuction contracts, as well as updates to the etf-auction-ui (next.js), which will need to be modified in order to construct proxy-wrapped delayed transactions. We will ultimately demonstrate how the delayed transaction manager UI can be used to participate in auctions. |
+| **0b.** | Documentation (.5 weeks) | We will provide both **inline documentation** of the code and a basic **tutorial** that explains how a user can use the delayed tx manager's features to manage proxy status and to use and monitor delayed transactions. We will deliver a comprehensive video demonstration which details all features of the dapp. |
+| **0c.** | Testing and Testing Guide (.5 weeks) | We will test using the jest framework to ensure proper functionality of the dapp. We will also strive to use the jasmine testing framework to ensure e2e functionality of the application. |
+| **0d.** | Docker (1 day) | We will provide a Dockerfile of the delayed tx manager which allows for easy deployments and local testing. |
+| **0e.** | Article (2 days) | We will publish a substack article detailing the deliverables, accomplishments, and obstacles encountered during the implementation of this milestone. |
+| **1.** | Future Proxy Manager (2 weeks) | We implement a future proxy manager component as the initial piece. This component includes account derivation and  proxy management (set self as future) capabilities. This will rely on the proxy utilities developed in the etf.js library during milestone (2). |
+| **2.** | Scheduler UI (2 weeks) | We develop a visual tool for defining a chain of delayed transactions. This component builds transactions using the txwrapper-etf, encrypts messages with the etf.js encryption functions, and signs transactions using polkadotjs. |
+| **3.** | Explorer UI (2 weeks) | We build a user interface to monitor the status of scheduled transactions and to access execution details. This interface will heavily rely on events emitted by the network. In addition, we explore the usage of tools such as Subquery to enhance and streamline this experience. |
 
 Note: We intend to host the UI on IPFS and also on Vercel to ensure decentralization of the application. Specifically, we will host our build on IPFS Infura.
 
+Total estimated weeks: at least 8 weeks capacity needed
 
 ## Future Plans
 
