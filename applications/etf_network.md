@@ -96,10 +96,8 @@ and when syncing clock nodes received from peers:
 
 ```mermaid
 graph LR;
-   A[recieve clock nodes 
-   from peers]-->B[verify clock nodes];
-   B-->C[Accept and Merge
-   into local Clock];
+   A[recieve clock nodes from peers]-->B[verify clock nodes];
+   B-->C[Accept and Merge into local Clock];
 ```
 
 where clock nodes are considered valid as long as the AUX data does not invalidate the **strong clock property**. That is, 'later' events must have 'later' slots associated with them, more on that later.
