@@ -143,6 +143,8 @@ Here, some account, say Alice, has constructed a Merkle clock for her delayed tr
 
 When there are several clocks, they can be merged to form a global, partially ordered Merkle Clock. By using the AUX data (slot identities), we can induce a global total ordering on all events. We won't define the merging algorithm in the scope of this proposal, however, we will visually elaborate the idea:
 
+note: the colors in this diagram work best in dark mode.
+
 ```mermaid
 graph TD;
    A[CID: QmA..., payload: null, 0, C: null]-->B[CID: QmB..., payload: CT_B, slot_b, C: QmA...];
@@ -150,10 +152,10 @@ graph TD;
    A--->C[CID: QmC..., payload: CT_C, slot_c, C: QmA...];
    C-->D[CID: QmD..., payload: CT_D, slot_d, C: QmB..., QmC...];
 
-   style B fill:#00FFBD;
-   style C fill:#9600d3;
-   style D fill:#9600d3;
-   style E fill:#d1c5cb;
+   style B fill:#668ba0;
+   style C fill:#a06666;
+   style D fill:#a06666;
+   style E fill:#727272;
 ```
 
 Clocks can only be merged if they are valid. That is, for any clock nodes, we must validate the AUX data associated with the node to ensure that 'later events' have slots that INCREASE within the AUX data. For example, look at the image above. There are three clocks being merged, the blue clock, $B = (n_b)$, the green one, $G = (n_e)$, and the red one $R = (n_c, n_d)$. Since each clock node in each clock is valid, where the AUX data increases with each event in the clock, the three clocks can be merged. It is then easy to see how this defines a global total ordering. The Merkle clock structure provides a partial order, and then by inspecting AUX data, we arrive at a total order, which is: $A => B => {E, C} => D$, where the ordering of $E$ and $C$ is somewhat arbitrary and left to the discretion of individual block producers.
