@@ -71,21 +71,6 @@ A transaction pool, coupled with nonces, is used to define a total global orderi
 
 In brief, we place the transaction pool by a Merkle clock. Each node has its own locally run Merkle clock that it syncs with its peers, in the same way as transactions are synced. The general flow for producing a chain of transactions is then:
 
-
-```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
-```
-
-```mermaid
-graph LR;
-   A-->B;
-   B-->C;
-```
-
 ```mermaid
 graph LR;
    A[prepare CALLS and encrypt for slots]-->B[construct Merkle clock];
@@ -144,27 +129,11 @@ It should be clear that alongside the merkle clock we also require a store of si
 
 Here is a visual example of what the merkle clock would look like for three transactions built on top of a 'genesis' event.
 
-``` mermaid
-   graph TD;
-      A[
-         CID: QmA...
-         payload: null, 0,
-         C: null
-      ]-->B[
-         CID: QmB...
-         payload: CT_B, slot_b,
-         C: QmA...
-      ];
-      B-->C[
-         CID: QmC...
-         payload: CT_C, slot_c,
-         C: QmA...
-      ];
-      C-->D[
-         CID: QmD...
-         payload: CT_D, slot_d,
-         C: QmB..., QmC...
-      ];
+```mermaid
+graph TD;
+   A[CID: QmA..., payload: null, 0, C: null]-->B[CID: QmB..., payload: CT_B, slot_b, C: QmA...];
+   B-->C[CID: QmC..., payload: CT_C, slot_c, C: QmA...];
+   C-->D[CID: QmD..., payload: CT_D, slot_d, C: QmB..., QmC...];
 ```
 
 Here, some account, say Alice, has constructed a Merkle clock for her delayed transactions, where the payload of each clock node contains both the encrypted CALL alongside the slot in blockchain consensus when that call can be decrypted.
@@ -173,59 +142,27 @@ Here, some account, say Alice, has constructed a Merkle clock for her delayed tr
 
 When there are several clocks, they can be merged to form a global, partially ordered Merkle Clock. By using the AUX data (slot identities), we can induce a global total ordering on all events. We won't define the merging algorithm in the scope of this proposal, however, we will visually elaborate the idea:
 
-``` mermaid
-   graph TD;
-      A[
-         CID: QmA...
-         payload: null, 0,
-         C: null
-      ]-->B[
-         CID: QmB...
-         payload: CT_B, slot_b,
-         C: QmA...
-      ];
-      A--->E[
-         CID: QmE...
-         payload: CT_E, slot_c,
-         C: QmA...
-      ];
-      A--->C[
-         CID: QmC...
-         payload: CT_C, slot_c,
-         C: QmA...
-      ];
-      C-->D[
-         CID: QmD...
-         payload: CT_D, slot_d,
-         C: QmB..., QmC...
-      ];
+```mermaid
+graph TD;
+   A[CID: QmA..., payload: null, 0, C: null]-->B[CID: QmB..., payload: CT_B, slot_b, C: QmA...];
+   A--->E[CID: QmE..., payload: CT_E, slot_c, C: QmA...];
+   A--->C[CID: QmC..., payload: CT_C, slot_c, C: QmA...];
+   C-->D[CID: QmD..., payload: CT_D, slot_d, C: QmB..., QmC...];
 
-      style B fill:#0000FF;
-      style C fill:#FF0000;
-      style D fill:#FF0000;
-      style E fill:#00FF00;
+   style B fill:#0000FF;
+   style C fill:#FF0000;
+   style D fill:#FF0000;
+   style E fill:#00FF00;
 ```
 
 Clocks can only be merged if they are valid. That is, for any clock nodes, we must validate the AUX data associated with the node to ensure that 'later events' have slots that INCREASE within the AUX data. For example, look at the image above. There are three clocks being merged, the blue clock, $B = (n_b)$, the green one, $G = (n_e)$, and the red one $R = (n_c, n_d)$. Since each clock node in each clock is valid, where the AUX data increases with each event in the clock, the three clocks can be merged. It is then easy to see how this defines a global total ordering. The Merkle clock structure provides a partial order, and then by inspecting AUX data, we arrive at a total order, which is: $A => B => {E, C} => D$, where the ordering of $E$ and $C$ is somewhat arbitrary and left to the discretion of individual block producers.
 
 If we replaced the red clock in the diagram with nodes where the slots are not increasing, then we would NOT merge that clock. The clock below would be invalid:
 
-``` mermaid
-   graph TD;
-      A[
-         CID: QmA...
-         payload: null, 0,
-         C: null
-      ]-->C[
-         CID: QmC...
-         payload: CT_C, slot_d,
-         C: QmA...
-      ];
-      C-->D[
-         CID: QmD...
-         payload: CT_D, slot_c,
-         C: QmC...,
-      ];
+```mermaid
+graph TD;
+   A[CID: QmA..., payload: null, 0, C: null]-->C[CID: QmC..., payload: CT_C, slot_d, C: QmA...];
+   C-->D[CID: QmD..., payload: CT_D, slot_c, C: QmC...];
 ```
 
 **Future Transaction Pool Validation and Execution**
@@ -234,18 +171,11 @@ Note: We know that this solution has clear limits to scalability. We do not plan
 
 Validator nodes are responsible for decrypting ciphertexts and executing transactions when they author blocks. They do this by first calculating an IBE secret (and DLEQ proof, as in the ETF consensus mechanism) and subsequently use it to decrypt ciphertexts. You can read more on the proof-of-extract mechanism [here](https://etf.idealabs.network/docs/ETF-extras/architecture#consensus-and-encryption-to-the-future). Instead of fetching the highest-priority transactions from the transation pool, validators use their latest known Merkle clock to fetch transactions that are weighted with the current slot identity. Once decrypted, transaction validation logic can continue unchanged, but we do not perform nonce validation and we verify the signature using the CID from the Merkle clock node.
 
-``` mermaid
-   graph LR
-      A[IBE.Extract
-         & DLEQ.Prove] --> B[
-            Get ciphertexts 
-            from Merkle clock
-         ] --> C[
-            Decrypt and Validate calls
-         ] --> D[
-            Build, sign, 
-            and broadcast the block
-         ];
+```mermaid
+graph LR
+   A[IBE.Extract & DLEQ.Prove] --> B[Get ciphertexts from Merkle clock];
+   B-->C[Decrypt and Validate calls];
+   C-->D[Build, sign, and broadcast the block];
 ```
 
 The block contains the DLEQ proof in the block header along with a value, $r$, per transaction. This value is calculated when the ciphertext is decrypted by the validator and allows for the ciphertext to be re-encrypted in the same way. Using these value, a block importer can verify the transactions against the merkle clock. The transactions consist of unsealed timelocked transactions. After submitting the transactions, the validator prunes its state (but does not broadcast this). 
@@ -255,15 +185,10 @@ When a block is imported, a block importer verifies the DLEQ proof and the signa
 That is, upon receiving a block:
 
 ``` mermaid
-   graph LR
-      A[validate the 
-      DLEQ proof] --> B[
-         validate transactions 
-         w/o nonce
-      ] --> C[
-         Reencrypt transactions
-         and rebuild clock state
-      ] --> D[verify root CID];
+graph LR
+   A[validate the DLEQ proof] --> B[validate transactions w/o nonce];
+   B-->C[Reencrypt transactions and rebuild clock state];
+   C-->D[verify root CID];
 ```
 
 It could be better if we has some type of Identity based homomporphic encryption, where we could perform some calculation on the sealed call data to check if the decrypted transactions are valid without requiring re-encryption of the transactions.
