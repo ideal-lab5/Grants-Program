@@ -72,22 +72,20 @@ A transaction pool, coupled with nonces, is used to define a total global orderi
 In brief, we place the transaction pool by a Merkle clock. Each node has its own locally run Merkle clock that it syncs with its peers, in the same way as transactions are synced. The general flow for producing a chain of transactions is then:
 
 ``` mermaid
-graph LR
+graph LR;
    A[prepare CALLS 
-   and encrypt for slots] --> 
-   B[construct Merkle clock] --> 
-   C[Broadcast clock nodes
+   and encrypt for slots]-->B[construct Merkle clock];
+   B-->C[Broadcast clock nodes
       and signature];
 ```
 
 and when syncing clock nodes received from peers:
 
 ``` mermaid
-graph LR
+graph LR;
    A[recieve clock nodes 
-   from peers] -->
-   B[verify clock nodes] --> 
-   C[Accept and Merge
+   from peers]-->B[verify clock nodes];
+   B-->C[Accept and Merge
    into local Clock];
 ```
 
